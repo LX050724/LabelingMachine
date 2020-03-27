@@ -67,7 +67,48 @@ RC_ICONS = bitbug_favicon.ico
 RESOURCES += \
     Resource.qrc
 
-INCLUDEPATH += /usr/local/include/opencv4/opencv /usr/local/include/opencv4 ./Inc
+INCLUDEPATH += ./Inc
+
+unix: INCLUDEPATH += /usr/local/include/opencv4/opencv /usr/local/include/opencv4
+win32: INCLUDEPATH += D:/opencv/opencv/vsbuild/install/include D:/opencv/opencv/vsbuild/install/include/opencv2
+
+CONFIG(debug, debug|release){
+win32: LIBS += \
+    -LD:/opencv/opencv/vsbuild/install/x64/vc16/lib \
+    -lopencv_calib3d411d \
+    -lopencv_core411d \
+    -lopencv_dnn411d \
+    -lopencv_features2d411d \
+    -lopencv_flann411d \
+    -lopencv_gapi411d \
+    -lopencv_highgui411d \
+    -lopencv_imgcodecs411d \
+    -lopencv_imgproc411d \
+    -lopencv_ml411d \
+    -lopencv_objdetect411d \
+    -lopencv_photo411d \
+    -lopencv_stitching411d \
+    -lopencv_video411d \
+    -lopencv_videoio411d
+} else {
+win32: LIBS += \
+    -LD:/opencv/opencv/vsbuild/install/x64/vc16/lib \
+    -lopencv_calib3d411 \
+    -lopencv_core411 \
+    -lopencv_dnn411 \
+    -lopencv_features2d411 \
+    -lopencv_flann411 \
+    -lopencv_gapi411 \
+    -lopencv_highgui411 \
+    -lopencv_imgcodecs411 \
+    -lopencv_imgproc411 \
+    -lopencv_ml411 \
+    -lopencv_objdetect411 \
+    -lopencv_photo411 \
+    -lopencv_stitching411 \
+    -lopencv_video411 \
+    -lopencv_videoio411
+}
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

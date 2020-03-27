@@ -627,7 +627,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="Src/ServerUI.cpp" line="22"/>
         <source>The TCP server is ready</source>
-        <translation>TCP服务器已经准备好了</translation>
+        <translation type="unfinished">TCP服务器已就绪</translation>
     </message>
     <message>
         <location filename="Src/ServerUI.cpp" line="53"/>
