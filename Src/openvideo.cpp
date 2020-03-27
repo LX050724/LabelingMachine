@@ -23,9 +23,9 @@ openvideo::~openvideo()
 void openvideo::on_videotoolButton_clicked()
 {
 #ifdef linux
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("选择目录"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("选择目录"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
     qInfo() << "videopath:" << dirpath;
     ui->videolineEdit->setText(dirpath);
@@ -34,9 +34,9 @@ void openvideo::on_videotoolButton_clicked()
 void openvideo::on_outtoolButton_clicked()
 {
 #ifdef linux
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("选择目录"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("选择目录"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
     qInfo() << "outpath:" << dirpath;
     ui->outlineEdit->setText(dirpath);
@@ -47,7 +47,7 @@ void openvideo::on_OKpushButton_clicked()
     if(ui->outlineEdit->text().length() == 0 ||
        ui->videolineEdit->text().length() == 0)
     {
-        QMessageBox::warning(this, "选择文件", "路径不完整");
+        QMessageBox::warning(this, tr("Select the file"), tr("Path incomplete"));
         return;
     }
 
@@ -75,11 +75,14 @@ void openvideo::on_OKpushButton_clicked()
         int div = ui->spinBox->value();
         int frame_count = video.get(cv::CAP_PROP_FRAME_COUNT);
         qInfo() << "CAP_PROP_FRAME_COUNT = " << frame_count;
-        if(QMessageBox::question(this, "确认", QString::asprintf("视频共%d帧，抽取%d帧", frame_count, frame_count / div)) == QMessageBox::Yes) {
+        auto button = QMessageBox::question(this, tr("confirm"),
+                tr("There are") + QString::number(frame_count) +
+                tr("frames of video,Extraction of") + QString::number(frame_count / div) + tr("frames"));
+        if(button == QMessageBox::Yes) {
             videoframe = new VideoFrame(this, this);
         }
     } else {
-        QMessageBox::warning(this, "错误", "打开文件失败");
+        QMessageBox::warning(this, tr("error"), tr("File opening failed"));
 
         ui->outlineEdit->setDisabled(false);
         ui->videolineEdit->setDisabled(false);
@@ -91,7 +94,7 @@ void openvideo::on_OKpushButton_clicked()
 }
 
 void openvideo::VideoFramecomplete() {
-    QMessageBox::information(this, "完成", "视频已分解");
+    QMessageBox::information(this, tr("complete"), tr("Video decomposition completed"));
 
     ui->outlineEdit->setDisabled(false);
     ui->videolineEdit->setDisabled(false);

@@ -14,8 +14,8 @@ public:
     int ID;
 
     BandBox()= default;
-    BandBox(int xmin, int ymin, int xmax, int yamx, QString  label, int id);
-    BandBox(const QRect& rect, QString  label, int _ID) :
+    BandBox(int xmin, int ymin, int xmax, int yamx, const QString &label, int id);
+    BandBox(const QRect& rect, const QString &label, int _ID) :
             Rect(rect), Label(label), ID(_ID) {}
 
     explicit BandBox(QGraphicsRectItem* item, int id = 0, QString  label = QString());

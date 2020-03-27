@@ -23,7 +23,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>主机列表</string>
+      <string>Client list:</string>
      </property>
     </widget>
    </item>
@@ -51,7 +51,7 @@
         </size>
        </property>
        <property name="text">
-        <string>开始</string>
+        <string>Start</string>
        </property>
       </widget>
      </item>

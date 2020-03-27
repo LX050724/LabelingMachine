@@ -146,16 +146,16 @@ void MainWindow::on_openVideo_triggered() {
 
 void MainWindow::on_open_triggered() {
 #ifdef linux
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("选择Project"), "/home");
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), "/home");
 #else
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("选择Project"), "C:/Users");
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), "C:/Users");
 #endif
     if(dirpath.isEmpty()) {
         return;
     }
     Project.setProjectPath(dirpath);
     if(!Project.load()) {
-        QMessageBox::warning(this, tr("error"), tr("文件打开失败,确认是否为LabelingMachine工程文件"));
+        QMessageBox::warning(this, tr("error"), tr("File opening failed, confirm whether it is a LabelingMachine project file"));
         return;
     }
 
@@ -173,18 +173,18 @@ void MainWindow::on_open_triggered() {
 
 void MainWindow::on_creat_triggered() {
 #ifdef linux
-    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("选择图片集文件夹"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("选择图片集文件夹"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
     if(Imgpath.isEmpty()) {
-        QMessageBox::warning(this, tr("没有选择"), tr("路径为空"));
+        QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
         return;
     }
 
-    QString xmlpath = QFileDialog::getExistingDirectory(this, tr("请选择xml文件夹"), Imgpath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString xmlpath = QFileDialog::getExistingDirectory(this, tr("Select an XML folder"), Imgpath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if(xmlpath.isEmpty()) {
-        QMessageBox::warning(this, tr("没有选择"), tr("路径为空"));
+        QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
         return;
     }
 
@@ -193,17 +193,17 @@ void MainWindow::on_creat_triggered() {
         qInfo() << "Create dir \"Project\"";
         if(!ProjectDir.mkdir("Project")){
             qWarning() << "Failed";
-            QMessageBox::warning(this, "error", "创建Project文件夹失败");
+            QMessageBox::warning(this, tr("error"), tr("The Project folder creation failed"));
             return;
         }
     } else {
         ProjectDir.cd("Project");
         if(ProjectDir.exists("Project.xml")) {
-            auto button =  QMessageBox::question(this, "found Project.xml", "发现Project.xml,是否加载标签并重新生成图片列表");
+            auto button =  QMessageBox::question(this, tr("found Project.xml"), tr("Discover project.xml, whether to load the tag and regenerate the list of images"));
             if(button == QMessageBox::Yes) {
                 Project.setProjectPath(Imgpath + "/Project/Project.xml");
                 if(!Project.load()) {
-                    QMessageBox::warning(this, tr("error"), tr("文件打开失败,确认是否为LabelingMachine工程文件"));
+                    QMessageBox::warning(this, tr("error"), tr("File opening failed, confirm whether it is a LabelingMachine project file"));
                     return;
                 }
             }
@@ -220,7 +220,7 @@ void MainWindow::on_creat_triggered() {
     QFileInfoList list = dir.entryInfoList();
 
     if(list.empty()) {
-        QMessageBox::warning(this, tr("error"), tr("没有文件"));
+        QMessageBox::warning(this, tr("error"), tr("No files"));
         return;
     }
 
@@ -352,7 +352,7 @@ void MainWindow::on_HostModeAction_triggered() {
 
     while (!pServerUi->isReady()) {
         if(pServerUi->isFailed()){
-            QMessageBox::warning(this, tr("error"), tr("TCP未能启动"));
+            QMessageBox::warning(this, tr("error"), tr("TCP startup failure"));
             delete pServerUi;
             pServerUi = nullptr;
             return;

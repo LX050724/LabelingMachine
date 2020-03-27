@@ -2,8 +2,8 @@
 
 #include <utility>
 
-BandBox::BandBox(int xmin, int ymin, int xmax, int yamx, QString label, int id):
-        Rect(QPoint(xmin, ymin), QPoint(xmax, yamx)), Label(std::move(label))
+BandBox::BandBox(int xmin, int ymin, int xmax, int yamx, const QString &label, int id):
+        Rect(QPoint(xmin, ymin), QPoint(xmax, yamx)), Label(label)
 {
     ID = id;
 }

@@ -74,13 +74,6 @@ private slots:
 
     void on_pushButton_clicked();
 
-//    void Proxy_nextimg();
-//    void Proxy_lastimg();
-//    void Proxy_Keypress(int Key);
-//    void Proxy_deletBox();
-//    void Proxy_drawBandBox(const BandBox & Box);
-//    void Proxy_imgs_listWidget_itemClicked(QListWidgetItem *item);
-//    void Proxy_class_tableWidget_cellClicked(int row, int column);
     void Proxy_comboBox_currentIndexChanged(int index);
 };
 

@@ -11,7 +11,7 @@ module::module(QWidget *parent, LabelingMaching *project) :
 {
     ui->setupUi(this);
     QString modulepath;
-    modulepath = QFileDialog::getOpenFileName(this, tr("选择module"), "/home");
+    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "/home");
 
     if(modulepath.isEmpty()){
         return;
@@ -30,7 +30,7 @@ module::module(QWidget *parent, LabelingMaching *project) :
     Process->setProgram(modulepath);
     Process->setArguments(Arguments);
     if(!Process->open()) {
-        QMessageBox::warning(this, "error", "Create Process failed");
+        QMessageBox::warning(this, tr("error"), tr("Create Process failed"));
         this->close();
     }
 

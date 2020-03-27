@@ -76,11 +76,11 @@ void classeditor::on_okpushButton_clicked() {
     for (int i = 0; i < ui->tableWidget->rowCount(); ++i) {
         QTableWidgetItem* Item = ui->tableWidget->item(i, 1);
         if(Item == nullptr) {
-            QMessageBox::warning(this, "error", QString::asprintf("第%d行为空", i));
+            QMessageBox::warning(this, tr("error"), QString::asprintf("The %d is empty", i));
             return;
         }
         if(Item->text().isEmpty()) {
-            QMessageBox::warning(this, "error", QString::asprintf("第%d行为空", i));
+            QMessageBox::warning(this, tr("error"), QString::asprintf("The %d is empty", i));
             return;
         }
     }

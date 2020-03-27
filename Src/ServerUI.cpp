@@ -19,7 +19,7 @@ ServerUI::ServerUI(QWidget *parent, MainWindow* pmainwindow) :
     }
     Ready = true;
 
-    Log_println("TCP服务器已就绪");
+    Log_println(tr("The TCP server is ready"));
 
     connect(Server, &TCP_Server::ReceiveComplete,
             this, &ServerUI::Sever_ReceiveComplete);
@@ -50,7 +50,7 @@ ServerUI::~ServerUI()
 void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress &Address) {
     if(Data.isEmpty()) {
         qWarning() << "Bad Data";
-        Log_println("Transmission error. Please try again");
+        Log_println(tr("Transmission error. Please try again"));
         return;
     }
     const char * pData = Data.data();
@@ -64,15 +64,15 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
     switch (flag) {
         case Flag_Label_IRP: {
             Send_Labels(Address);
-            Log_printf("收到%s的获取标签请求\n",
-                    QHostAddress2c_str(Address));
+            Log_printf("A get label request from %s was received\n",
+                       QHostAddress2c_str(Address));
             break;
         }
         case Flag_Image_IRP: {
             int len = ToInt(pData, 2);
             QString name(Data.mid(sizeof(int) * 3, len));
             Send_Image(Address, name);
-            Log_printf("收到来自%s的获取图片%s请求\n",
+            Log_printf("Received a request from %s to get a picture %s\n",
                     QHostAddress2c_str(Address), name.toStdString().c_str());
             break;
         }
@@ -80,19 +80,19 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
             int len = ToInt(pData, 2);
             QString name(Data.mid(sizeof(int) * 3, len));
             Send_Image_BandBoxs(Address, name);
-            Log_printf("收到来自%s的获取%s的Bandbox请求\n",
+            Log_printf("Received a Bandbox request from %s to get %s\n",
                     QHostAddress2c_str(Address), name.toStdString().c_str());
             break;
         }
         case Flag_Image_List_IRP: {
             Send_Image_List(Address);
-            Log_printf("收到%s的获取图片列表请求\n",
+            Log_printf("Received a request for a list of images from %s\n",
                        QHostAddress2c_str(Address));
             break;
         }
         case Flag_Image_BandBoxs_FB: {
             QString filename = Receive_Image_BandBox(Data);
-            Log_printf("收到%s的BandBox,已保存\n",
+            Log_printf("Received %s BandBox, saved\n",
                        filename.data());
             break;
         }
@@ -101,20 +101,20 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
 
 void ServerUI::on_pushButton_clicked() {
     if((ClientConut = Server->getCilentConut()) == 0) {
-        QMessageBox::warning(this, "error", "没有客户端连接");
+        QMessageBox::warning(this, tr("error"), tr("No client connection"));
         return;
     }
 
     ui->pushButton->setDisabled(true);
     ClientList = Server->getClientAddressList();
 
-    Log_printf("停止接入,已接入%d\n分配任务...\n", ClientConut);
+    Log_printf("Stopped accessing,%d is accessed\nAssign tasks...\n", ClientConut);
     allocation(pMainWindow->Project.no_label_Img());
 
-    Log_printf("分配完成\n总数%d\n", pMainWindow->Project.all_Img().size());
-    Log_printf("Server:%d张\n", TaskList.front().size());
+    Log_printf("Assigned to complete\nThe total number of %d\n", pMainWindow->Project.all_Img().size());
+    Log_printf("Server:%d\n", TaskList.front().size());
     for(int i = 0; i < ClientList.size(); ++i) {
-        Log_printf("%s:%d张\n", ClientList[i].toString().toStdString().c_str(),
+        Log_printf("%s:%d\n", ClientList[i].toString().toStdString().c_str(),
                    TaskList[i + 1].size());
         SendSingle_Ready(ClientList[i]);
     }
@@ -130,12 +130,12 @@ void ServerUI::Sever_TCPNewConnection(const QHostAddress &Address) {
     QList<QString> Addresslist;
     if(ClientConut > 0) {
         if(ClientList.indexOf(Address) >= 0) {
-            Log_printf("%s重新接入\n", ToCharp(Address.toString().toLocal8Bit()));
-            Log_println("发送开始信号");
+            Log_printf("%s To access\n", ToCharp(Address.toString().toLocal8Bit()));
+            Log_println("Start signal");
             SendSingle_Ready(Address);
         } else return;
     } else {
-        Log_printf("%s 接入\n", ToCharp(Address.toString().toLocal8Bit()));
+        Log_printf("%s access\n", ToCharp(Address.toString().toLocal8Bit()));
     }
     for(const QHostAddress& i : Server->getClientAddressList())
         Addresslist.push_back(i.toString());
@@ -153,7 +153,7 @@ void ServerUI::Sever_TCPDisconnected(const QHostAddress &Address) {
     ui->listWidget->clear();
     ui->listWidget->addItems(Addresslist);
     ui->listWidget->sortItems();
-    Log_printf("%s断开连接\n", Address.toString().toStdString().c_str());
+    Log_printf("%sdisconnect\n", Address.toString().toStdString().c_str());
 }
 
 void ServerUI::Sever_acceptError(QAbstractSocket::SocketError socketError) {

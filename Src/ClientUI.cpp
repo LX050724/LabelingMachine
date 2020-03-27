@@ -33,20 +33,23 @@ ClientUI::~ClientUI() {
 void ClientUI::on_pushButton_clicked() {
     if(Client->isReady()){
         Client->Disconnect();
-        ui->pushButton->setText("连接");
+        ui->pushButton->setText(tr("Connect"));
     } else {
         QHostAddress SeverAddress(ui->lineEdit->text());
         if(SeverAddress.isNull()){
-            QMessageBox::warning(this, "错误", "IP地址错误");
+            QMessageBox::warning(this, tr("error"), tr("IP address error"));
             return;
         }
-        Log_println("开始连接" + SeverAddress.toString());
+        Log_println(tr("Begin to connect") + SeverAddress.toString().toUtf8());
         if(!Client->Connect(SeverAddress)){
-            QMessageBox::warning(this, "错误", "连接失败");
-            Log_println("连接失败");
+            QMessageBox::warning(this, tr("error"), tr("The connection fails"));
+            Log_println(tr("The connection fails"));
             return;
         }
-        else Log_println("连接成功\n等待服务器准备信号");
+        else {
+            Log_println(tr("The connection is successful"));
+            Log_println(tr("Wait for the server to prepare the signal"));
+        }
 
         pMainWindow->Project.setImgPath("remote");
         pMainWindow->Project.setXmlPath("remote");
@@ -58,7 +61,7 @@ void ClientUI::on_pushButton_clicked() {
                          this, &ClientUI::Client_Disconnected,
                          Qt::QueuedConnection);
 
-        ui->pushButton->setText("断开");
+        ui->pushButton->setText("Disconnect");
     }
 }
 
@@ -66,7 +69,7 @@ void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
     if(array.isEmpty()) {
         qWarning() << "Bad Data";
         loadcomplete = true;
-        Log_println("Transmission error. Please try again");
+        Log_println(tr("Transmission error. Please try again"));
         return;
     }
     const char * pData = array.data();
@@ -82,38 +85,39 @@ void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
     }
     switch (flag) {
         case Flag_Ready: {
-            Log_println("服务器启动\n发送获取标签请求");
+            Log_println(tr("Server startup"));
+            Log_println(tr("Send the get label request"));
             ui->pushButton->setDisabled(true);
             singleProxy();
             Send_IRP(Flag_Label_IRP);
             break;
         }
         case Flag_Label_IRP: {
-            Log_println("收到服务器标签数据");
+            Log_println(tr("Receive server label data"));
             Receive_Labels(array);
             Send_IRP(Flag_Image_List_IRP);
-            Log_println("发送获取图片列表请求");
+            Log_println(tr("Send a request to get a list of pictures"));
             break;
         }
         case Flag_Image_List_IRP: {
-            Log_println("收到服务器图片列表数据");
+            Log_println(tr("Received server image list data"));
             Receive_Image_List(array);
             break;
         }
         case Flag_Image_IRP: {
-            Log_println("收到服务器图片数据");
+            Log_println(tr("Received server image data"));
             Receive_Image(array);
             Send_IRP(Flag_Image_BandBoxs_IRP, filename_now);
             break;
         }
         case Flag_Image_BandBoxs_IRP: {
-            Log_println("收到服务器BandBox数据");
+            Log_println(tr("Received server BandBox data"));
             Recrive_Image_BandBoxs(array);
             loadimg();
             break;
         }
         case Flag_Image_haslabel: {
-            Log_println("收到服务器haslabel数据");
+            Log_println(tr("Receive server haslabel data"));
             Receive_Image_HasLabel(array);
             break;
         }
@@ -121,8 +125,8 @@ void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
 }
 
 void ClientUI::Client_Disconnected(){
-    Log_println("连接断开");
-    ui->pushButton->setText("连接");
+    Log_println(tr("Connection is broken"));
+    ui->pushButton->setText(tr("The connection"));
 }
 
 void ClientUI::Send_Image_BandBox() {
@@ -168,7 +172,7 @@ void ClientUI::Send_Image_BandBox() {
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
     Client->Transmit(data);
 
-    Log_println("已发送BandBox数据");
+    Log_println(tr("BandBox data has been sent"));
 }
 
 void ClientUI::Send_IRP(ClientUI::IRP n) {
@@ -375,7 +379,7 @@ void ClientUI::Proxy_save_triggered() {
 void ClientUI::Timer_timeout() {
     if(!loadcomplete) {
         loadcomplete = true;
-        QMessageBox::warning(this, "warning", "操作超时");
+        QMessageBox::warning(this, tr("warning"), tr("Operation timed out"));
     }
 }
 

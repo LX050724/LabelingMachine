@@ -58,7 +58,8 @@ add_executable(${PROJECT_NAME}
 )
 
 #添加include路径
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_autogen/include)
 
 #添加多线程库
 target_link_libraries(${PROJECT_NAME} pthread)

@@ -54,17 +54,17 @@
           </property>
           <item>
            <property name="text">
-            <string>所有</string>
+            <string>All</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>已标记</string>
+            <string>Labeled</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>未标记</string>
+            <string>Unlabeled</string>
            </property>
           </item>
          </widget>
@@ -130,7 +130,7 @@
                </size>
               </property>
               <property name="text">
-               <string>类列表:</string>
+               <string>Class list:</string>
               </property>
              </widget>
             </item>
@@ -155,7 +155,7 @@
                </size>
               </property>
               <property name="text">
-               <string>编辑类列表</string>
+               <string>Edit class list</string>
               </property>
              </widget>
             </item>
@@ -240,7 +240,7 @@
                </size>
               </property>
               <property name="text">
-               <string>上一张</string>
+               <string>Last picture</string>
               </property>
              </widget>
             </item>
@@ -259,7 +259,7 @@
                </size>
               </property>
               <property name="text">
-               <string>下一张</string>
+               <string>Next picture</string>
               </property>
              </widget>
             </item>
@@ -290,7 +290,7 @@
              </size>
             </property>
             <property name="text">
-             <string>标签列表:</string>
+             <string>TAB list:</string>
             </property>
            </widget>
           </item>
@@ -372,7 +372,7 @@
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="title">
-     <string>文件</string>
+     <string>File</string>
     </property>
     <addaction name="creat"/>
     <addaction name="separator"/>
@@ -383,20 +383,20 @@
    </widget>
    <widget class="QMenu" name="menu_Conversion">
     <property name="title">
-     <string>转换</string>
+     <string>Conversion</string>
     </property>
     <addaction name="Program_Conversion"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
-     <string>帮助</string>
+     <string>Help</string>
     </property>
     <addaction name="help"/>
     <addaction name="about"/>
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>协作</string>
+     <string>Collaboration</string>
     </property>
     <addaction name="HostModeAction"/>
     <addaction name="ClientModeAction"/>
@@ -409,7 +409,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="openVideo">
    <property name="text">
-    <string>分解视频文件</string>
+    <string>Decompose video files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
@@ -417,7 +417,7 @@
   </action>
   <action name="help">
    <property name="text">
-    <string>帮助</string>
+    <string>Help</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -425,17 +425,17 @@
   </action>
   <action name="about">
    <property name="text">
-    <string>关于</string>
+    <string>About</string>
    </property>
   </action>
   <action name="Program_Conversion">
    <property name="text">
-    <string>从程序启动格式转换</string>
+    <string>Launch format conversion from the program</string>
    </property>
   </action>
   <action name="save">
    <property name="text">
-    <string>保存工程</string>
+    <string>Save the project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -443,7 +443,7 @@
   </action>
   <action name="open">
    <property name="text">
-    <string>打开工程</string>
+    <string>Open the project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -451,20 +451,20 @@
   </action>
   <action name="creat">
    <property name="text">
-    <string>从图片集创建工程</string>
+    <string>Create the project from the gallery</string>
    </property>
   </action>
   <action name="HostModeAction">
    <property name="text">
-    <string>主机模式</string>
+    <string>Host mode</string>
    </property>
    <property name="toolTip">
-    <string>主机模式</string>
+    <string>Host mode</string>
    </property>
   </action>
   <action name="ClientModeAction">
    <property name="text">
-    <string>客户端模式</string>
+    <string>Client mode</string>
    </property>
   </action>
  </widget>
