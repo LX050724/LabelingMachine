@@ -262,6 +262,7 @@ void ServerUI::Send_Image(const QHostAddress &Address, const QString &name) {
     file.setFileName(ImagePath + '/' + ImageFilename);
     file.open(QFile::ReadOnly);
     QByteArray imgdata = file.readAll();
+    file.close();
 
     int head[] = {
             Flag_Image_IRP,
