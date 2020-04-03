@@ -13,7 +13,7 @@ ClientUI::ClientUI(QWidget *parent, MainWindow *pmainwindow) :
     ui(new Ui::ClientUI)
 {
     ui->setupUi(this);
-
+    Image = new QImage;
     pMainWindow->Project.setXmlPath("remote");
     pMainWindow->Project.setImgPath("remote");
 
@@ -61,7 +61,7 @@ void ClientUI::on_pushButton_clicked() {
                          this, &ClientUI::Client_Disconnected,
                          Qt::QueuedConnection);
 
-        ui->pushButton->setText("Disconnect");
+        ui->pushButton->setText(tr("Disconnect"));
     }
 }
 
@@ -210,17 +210,14 @@ void ClientUI::Receive_Labels(const QByteArray &array) {
 }
 
 void ClientUI::Receive_Image(const QByteArray &array) {
-    /*int size, int flag = Flag_Image_IRP, int w, int h, int format, int ImageSize, char[ImaneSize] imgRAW*/
+    /*int size, int flag = Flag_Image_IRP, int ImageSize, char[ImageSize] imgRAW*/
     const char * pData = array.constData();
-    int w = ToInt(pData, 2);
-    int h = ToInt(pData, 3);
-    int format = ToInt(pData, 4);
+    int ImageSize = ToInt(pData, 2);
     ImageRAWData = array;
-    ImageRAWData.remove(0, sizeof(int) * 6);
-    uchar *ImgData = (uchar *)ImageRAWData.data();
-    QImage Img(ImgData, w, h, (QImage::Format)format);
-    delete Image;
-    Image = new QImage(ImgData, w, h, (QImage::Format)format);
+    ImageRAWData.remove(0, sizeof(int) * 3);
+    Image->loadFromData(ImageRAWData);
+    qDebug() << ImageRAWData.size() << ImageSize;
+    if(ImageRAWData.size() != ImageSize)qWarning("Image data size error");
 }
 
 void ClientUI::Receive_Image_List(const QByteArray &array) {

@@ -104,6 +104,11 @@ p, li { white-space: pre-wrap; }
         <translation>等待服务器准备信号</translation>
     </message>
     <message>
+        <location filename="Src/ClientUI.cpp" line="64"/>
+        <source>Disconnect</source>
+        <translation>断开连接</translation>
+    </message>
+    <message>
         <location filename="Src/ClientUI.cpp" line="72"/>
         <source>Transmission error. Please try again</source>
         <translation>传输错误。请再试一次</translation>
@@ -164,12 +169,12 @@ p, li { white-space: pre-wrap; }
         <translation>已发送BandBox数据</translation>
     </message>
     <message>
-        <location filename="Src/ClientUI.cpp" line="382"/>
+        <location filename="Src/ClientUI.cpp" line="379"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="Src/ClientUI.cpp" line="382"/>
+        <location filename="Src/ClientUI.cpp" line="379"/>
         <source>Operation timed out</source>
         <translation>操作超时</translation>
     </message>
@@ -627,7 +632,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="Src/ServerUI.cpp" line="22"/>
         <source>The TCP server is ready</source>
-        <translation type="unfinished">TCP服务器已就绪</translation>
+        <translation>TCP服务器已就绪</translation>
     </message>
     <message>
         <location filename="Src/ServerUI.cpp" line="53"/>

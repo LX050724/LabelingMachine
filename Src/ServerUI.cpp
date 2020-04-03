@@ -254,22 +254,24 @@ void ServerUI::Send_Labels(const QHostAddress &Address) {
 }
 
 void ServerUI::Send_Image(const QHostAddress &Address, const QString &name) {
-    /*int size, int flag = Flag_Image_IRP, int w, int h, int format, int ImageSize, char[ImaneSize] imgRAW*/
+    /*int size, int flag = Flag_Image_IRP, int ImageSize, char[ImageSize] imgRAW*/
     int Index = pMainWindow->Project.findImage(name);
-    QImage Img = pMainWindow->Project.all_Img()[Index].loadImage();
+    QString ImagePath = pMainWindow->Project.all_Img()[Index].getImagePath();
+    QString ImageFilename = pMainWindow->Project.all_Img()[Index].getImageFilename();
+    QFile file;
+    file.setFileName(ImagePath + '/' + ImageFilename);
+    file.open(QFile::ReadOnly);
+    QByteArray imgdata = file.readAll();
+
     int head[] = {
             Flag_Image_IRP,
-            Img.width(),
-            Img.height(),
-            Img.format(),
-            (int)Img.sizeInBytes() };
-
+            imgdata.size() };
     QByteArray data(ToCharp(head), sizeof(head));
-    data.push_back(QByteArray(ToCharp(Img.constBits()), head[4]));
+    data.push_back(imgdata);
 
     int size = data.size();
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    qDebug() << size << Img.sizeInBytes();
+    qDebug() << size << head[1];
     Server->SendTo(Address, data);
 }
 
