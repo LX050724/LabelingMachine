@@ -11,11 +11,23 @@ module::module(QWidget *parent, LabelingMaching *project) :
 {
     ui->setupUi(this);
     QString modulepath;
-    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "/home");
+    QString outputpath;
 
-    if(modulepath.isEmpty()){
+#ifdef linux
+    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "/home");
+    if(modulepath.isEmpty())
         return;
-    }
+    outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), "/home");
+    if(outputpath.isEmpty())
+        return;
+#else
+    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "C:/Users");
+    if(modulepath.isEmpty())
+        return;
+    outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), "C:/Users");
+    if(outputpath.isEmpty())
+        return;
+#endif
 
     Ready = true;
     QStringList Arguments;
@@ -25,6 +37,8 @@ module::module(QWidget *parent, LabelingMaching *project) :
     Arguments << pProject->getXmlPath();
     Arguments << "--ImgPath";
     Arguments << pProject->getImgPath();
+    Arguments << "--OutputPath";
+    Arguments << outputpath;
 
     Process = new QProcess(this);
     Process->setProgram(modulepath);

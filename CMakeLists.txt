@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 project(LabelingMachine)
 
+include(modules/CMakeLists.txt)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_COMPILER /usr/bin/gcc)
 
@@ -15,7 +17,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #添加源文件
-add_executable(${PROJECT_NAME}
+add_executable(LabelingMachine
     Src/aboutwindow.cpp
     Src/bandbox.cpp
     Src/bandboxview.cpp
@@ -55,14 +57,15 @@ add_executable(${PROJECT_NAME}
     Inc/module.h
     Src/module.ui
     Resource.qrc
+    LabelingMachine_zh_CN.ts
 )
 
 #添加include路径
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
-        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_autogen/include)
+target_include_directories(LabelingMachine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
+        ${CMAKE_CURRENT_BINARY_DIR}/LabelingMachine_autogen/include)
 
 #添加多线程库
-target_link_libraries(${PROJECT_NAME} pthread)
+target_link_libraries(LabelingMachine pthread)
 #添加编译选项
 add_compile_options(-pipe -O3)
 add_link_options(-O2)
@@ -73,9 +76,9 @@ find_package(Qt5Widgets)
 find_package(Qt5Gui)
 find_package(Qt5Xml)
 find_package(Qt5Network)
-qt5_use_modules(${PROJECT_NAME} Core Widgets Gui Xml Network)
+qt5_use_modules(LabelingMachine Core Widgets Gui Xml Network)
 
 #OpenCV
 find_package(OpenCV 4.1.1 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(LabelingMachine ${OpenCV_LIBS})

@@ -67,7 +67,7 @@ bool ImageData::saveXml() {
         IDElement.appendChild(XmlReader.createTextNode(QString::number(object.ID)));
         objectElement.appendChild(IDElement);
 
-        QDomElement bndboxElement = XmlReader.createElement("bndbox");
+        QDomElement bandboxElement = XmlReader.createElement("bandbox");
 
         int xmin = object.Rect.x();
         int ymin = object.Rect.y();
@@ -76,21 +76,21 @@ bool ImageData::saveXml() {
 
         QDomElement xminElement = XmlReader.createElement("xmin");
         xminElement.appendChild(XmlReader.createTextNode(QString::number(xmin)));
-        bndboxElement.appendChild(xminElement);
+        bandboxElement.appendChild(xminElement);
 
         QDomElement yminElement = XmlReader.createElement("ymin");
         yminElement.appendChild(XmlReader.createTextNode(QString::number(ymin)));
-        bndboxElement.appendChild(yminElement);
+        bandboxElement.appendChild(yminElement);
 
         QDomElement xmaxElement = XmlReader.createElement("xmax");
         xmaxElement.appendChild(XmlReader.createTextNode(QString::number(xmax)));
-        bndboxElement.appendChild(xmaxElement);
+        bandboxElement.appendChild(xmaxElement);
 
         QDomElement ymaxElement = XmlReader.createElement("ymax");
         ymaxElement.appendChild(XmlReader.createTextNode(QString::number(ymax)));
-        bndboxElement.appendChild(ymaxElement);
+        bandboxElement.appendChild(ymaxElement);
 
-        objectElement.appendChild(bndboxElement);
+        objectElement.appendChild(bandboxElement);
 
         root.appendChild(objectElement);
     }
@@ -145,11 +145,11 @@ void ImageData::parseobjectMembers(const QDomElement& Node) {
 
     QString name = Node.firstChildElement("name").text();
     int ID = Node.firstChildElement("ID").text().toInt();
-    QDomElement bndbox = Node.firstChildElement("bndbox");
-    xmin = bndbox.firstChildElement("xmin").text().toInt();
-    ymin = bndbox.firstChildElement("ymin").text().toInt();
-    xmax = bndbox.firstChildElement("xmax").text().toInt();
-    ymax = bndbox.firstChildElement("ymax").text().toInt();
+    QDomElement bandbox = Node.firstChildElement("bandbox");
+    xmin = bandbox.firstChildElement("xmin").text().toInt();
+    ymin = bandbox.firstChildElement("ymin").text().toInt();
+    xmax = bandbox.firstChildElement("xmax").text().toInt();
+    ymax = bandbox.firstChildElement("ymax").text().toInt();
 
     BandBoxs.push_back(BandBox(xmin, ymin, xmax, ymax, name, ID));
 }
