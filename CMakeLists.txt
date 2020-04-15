@@ -4,10 +4,6 @@ project(LabelingMachine)
 include(modules/CMakeLists.txt)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_COMPILER /usr/bin/gcc)
-
-add_compile_options(-O3)
-add_link_options(-O1)
 
 #Qt自动生成选项
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -64,14 +60,19 @@ add_executable(LabelingMachine
 target_include_directories(LabelingMachine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
         ${CMAKE_CURRENT_BINARY_DIR}/LabelingMachine_autogen/include)
 
-#添加多线程库
-target_link_libraries(LabelingMachine pthread)
-#添加编译选项
-add_compile_options(-pipe -O3)
-add_link_options(-O2)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+#    add_compile_options(-pipe -O3)
+#    add_link_options(-O1)
+    #添加多线程库
+    target_link_libraries(LabelingMachine pthread)
+    set(CMAKE_PREFIX_PATH /usr/local/Qt_5.14.0/5.14.0/gcc_64/lib/cmake)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    #设置Qt库
+    set(CMAKE_PREFIX_PATH D:/Qt/5.14.0/msvc2017_64/lib/cmake)
+    set(OpenCV_DIR D:/opencv/opencv/nmake_build/install)
+endif()
 
 #设置Qt库
-set(CMAKE_PREFIX_PATH /usr/local/Qt_5.14.0/5.14.0/gcc_64/lib/cmake)
 find_package(Qt5Widgets)
 find_package(Qt5Gui)
 find_package(Qt5Xml)

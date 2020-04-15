@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QTranslator *qtTranslator = new QTranslator;
+    auto *qtTranslator = new QTranslator;
     if(qtTranslator->load("./LabelingMachine_zh_CN.qm")) {
         a.installTranslator(qtTranslator);
     } else qDebug("error");
