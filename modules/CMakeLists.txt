@@ -1,4 +1,5 @@
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    include(modules/yoloV3_voc_mod/CMakeLists.txt)
-elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+cmake_minimum_required(VERSION 3.10)
+if(CMAKE_SYSTEM_NAME MATCHES Linux)
+    add_subdirectory(yoloV3_voc_mod)
+elseif(CMAKE_SYSTEM_NAME MATCHES Windows)
 endif()
