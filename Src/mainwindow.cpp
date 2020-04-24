@@ -12,29 +12,28 @@
 #include "ServerUI.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+        QMainWindow(parent),
+        ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     QObject::connect(ui->nextimg_pushButton, &QPushButton::clicked,
-            this, &MainWindow::nextimg_pushButton_clicked);
+                     this, &MainWindow::nextimg_pushButton_clicked);
     QObject::connect(ui->lastimg_pushButton, &QPushButton::clicked,
-            this, &MainWindow::lastimg_pushButton_clicked);
+                     this, &MainWindow::lastimg_pushButton_clicked);
     QObject::connect(ui->graphicsView, &BandBoxView::Keypress,
-            this, &MainWindow::graphicsView_Keypress);
+                     this, &MainWindow::graphicsView_Keypress);
     QObject::connect(ui->graphicsView, &BandBoxView::deletBox,
-            this, &MainWindow::graphicsView_deletBox);
+                     this, &MainWindow::graphicsView_deletBox);
     QObject::connect(ui->graphicsView, &BandBoxView::drawBandBox,
-            this, &MainWindow::graphicsView_drawBandBox);
+                     this, &MainWindow::graphicsView_drawBandBox);
     QObject::connect(ui->imgs_listWidget, &QListWidget::itemClicked,
-            this, &MainWindow::imgs_listWidget_itemClicked);
+                     this, &MainWindow::imgs_listWidget_itemClicked);
     QObject::connect(ui->class_tableWidget, &QTableWidget::cellClicked,
-            this, &MainWindow::class_tableWidget_cellClicked);
+                     this, &MainWindow::class_tableWidget_cellClicked);
     QObject::connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(comboBox_currentIndexChanged(int)));
+                     this, SLOT(comboBox_currentIndexChanged(int)));
     QObject::connect(ui->save, &QAction::triggered,
-            this, &MainWindow::save_triggered);
+                     this, &MainWindow::save_triggered);
 
     ui->Program_Conversion->setDisabled(true);
 }
@@ -45,16 +44,16 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     Project.save();
-    if(pClientUi)pClientUi->close();
-    if(pServerUi)pServerUi->close();
+    if (pClientUi)pClientUi->close();
+    if (pServerUi)pServerUi->close();
     QWidget::closeEvent(event);
 }
 
 void MainWindow::lastimg_pushButton_clicked() {
-    if(ui->imgs_listWidget->count() > 0) {
+    if (ui->imgs_listWidget->count() > 0) {
         int row = ui->imgs_listWidget->currentRow() - 1;
-        QListWidgetItem* Item = ui->imgs_listWidget->item(row);
-        if(Item != nullptr){
+        QListWidgetItem *Item = ui->imgs_listWidget->item(row);
+        if (Item != nullptr) {
             ui->imgs_listWidget->setCurrentRow(row);
             loadimg(Item->text());
         }
@@ -62,26 +61,25 @@ void MainWindow::lastimg_pushButton_clicked() {
 }
 
 void MainWindow::nextimg_pushButton_clicked() {
-    if(ui->imgs_listWidget->count() > 0) {
+    if (ui->imgs_listWidget->count() > 0) {
         int row = ui->imgs_listWidget->currentRow() + 1;
-        QListWidgetItem* Item = ui->imgs_listWidget->item(row);
-        if(Item != nullptr){
+        QListWidgetItem *Item = ui->imgs_listWidget->item(row);
+        if (Item != nullptr) {
             ui->imgs_listWidget->setCurrentRow(row);
             loadimg(Item->text());
         }
     }
 }
 
-void MainWindow::comboBox_currentIndexChanged(int index)
-{
-    if(Project.isOpened())
+void MainWindow::comboBox_currentIndexChanged(int index) {
+    if (Project.isOpened())
         updateimglist(index);
     else
         ui->comboBox->setCurrentIndex(0);
 }
 
 void MainWindow::on_pushButton_3_clicked() {
-    if(Project.isOpened()) {
+    if (Project.isOpened()) {
         classeditor classeditorwindow(this, &Project.labels);
         classeditorwindow.exec();
         Project.save();
@@ -90,11 +88,11 @@ void MainWindow::on_pushButton_3_clicked() {
 }
 
 void MainWindow::imgs_listWidget_itemClicked(QListWidgetItem *item) {
-    if(!item->text().isEmpty())
+    if (!item->text().isEmpty())
         loadimg(item->text());
 }
 
-void MainWindow::graphicsView_drawBandBox(const BandBox & Box) {
+void MainWindow::graphicsView_drawBandBox(const BandBox &Box) {
     int count = ui->label_tableWidget->rowCount();
     ui->label_tableWidget->setRowCount(count + 1);
     auto Label_Item = new QTableWidgetItem(Box.Label);
@@ -109,25 +107,25 @@ void MainWindow::graphicsView_deletBox() {
 
 void MainWindow::graphicsView_Keypress(int Key) {
     switch (Key) {
-    case Qt::Key_Q:
-        lastimg_pushButton_clicked();
-        break;
-    case Qt::Key_E:
-        nextimg_pushButton_clicked();
-        break;
+        case Qt::Key_Q:
+            lastimg_pushButton_clicked();
+            break;
+        case Qt::Key_E:
+            nextimg_pushButton_clicked();
+            break;
     }
 
-    if(Key == Qt::Key_QuoteLeft || (Qt::Key_0 <= Key && Key <= Qt::Key_9)) {
-        if(Key == Qt::Key_QuoteLeft)
+    if (Key == Qt::Key_QuoteLeft || (Qt::Key_0 <= Key && Key <= Qt::Key_9)) {
+        if (Key == Qt::Key_QuoteLeft)
             Key = 0;
         else
             Key -= Qt::Key_0;
 
         int count = ui->class_tableWidget->rowCount();
-        if(Key < count) {
+        if (Key < count) {
             ui->class_tableWidget->setCurrentCell(Key, 0);
-            QTableWidgetItem* Item = ui->class_tableWidget->item(Key, 1);
-            if(Item != nullptr)
+            QTableWidgetItem *Item = ui->class_tableWidget->item(Key, 1);
+            if (Item != nullptr)
                 ui->graphicsView->setLabel(Key, Item->text(), Project.labels.LabelCount());
             else
                 ui->graphicsView->setLabel(0, QString(), 0);
@@ -150,60 +148,64 @@ void MainWindow::on_open_triggered() {
 #else
     QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), "C:/Users");
 #endif
-    if(dirpath.isEmpty()) {
-        return;
+    if (!dirpath.isEmpty()) {
+        Project.setProjectPath(dirpath);
+        if (!Project.load()) {
+            QMessageBox::warning(this, tr("error"),
+                                 tr("File opening failed, confirm whether it is a LabelingMachine project file"));
+            return;
+        }
+
+        imgpath = Project.getImgPath();
+
+        ui->graphicsView->setLabel(0, Project.labels[0], Project.labels.LabelCount());
+
+        updateimglist(all);
+        updateclass();
+        ui->open->setDisabled(true);
+        ui->creat->setDisabled(true);
+        ui->ClientModeAction->setDisabled(true);
+        ui->Program_Conversion->setEnabled(true);
     }
-    Project.setProjectPath(dirpath);
-    if(!Project.load()) {
-        QMessageBox::warning(this, tr("error"), tr("File opening failed, confirm whether it is a LabelingMachine project file"));
-        return;
-    }
-
-    imgpath = Project.getImgPath();
-
-    ui->graphicsView->setLabel(0, Project.labels[0], Project.labels.LabelCount());
-
-    updateimglist(all);
-    updateclass();
-    ui->open->setDisabled(true);
-    ui->creat->setDisabled(true);
-    ui->ClientModeAction->setDisabled(true);
-    ui->Program_Conversion->setEnabled(true);
 }
 
 void MainWindow::on_creat_triggered() {
 #ifdef linux
     QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "C:/Users",
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
-    if(Imgpath.isEmpty()) {
+    if (Imgpath.isEmpty()) {
         QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
         return;
     }
 
-    QString xmlpath = QFileDialog::getExistingDirectory(this, tr("Select an XML folder"), Imgpath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if(xmlpath.isEmpty()) {
+    QString xmlpath = QFileDialog::getExistingDirectory(this, tr("Select an XML folder"), Imgpath,
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (xmlpath.isEmpty()) {
         QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
         return;
     }
 
     QDir ProjectDir(Imgpath);
-    if(!ProjectDir.exists("Project")) {
+    if (!ProjectDir.exists("Project")) {
         qInfo() << "Create dir \"Project\"";
-        if(!ProjectDir.mkdir("Project")){
+        if (!ProjectDir.mkdir("Project")) {
             qWarning() << "Failed";
             QMessageBox::warning(this, tr("error"), tr("The Project folder creation failed"));
             return;
         }
     } else {
         ProjectDir.cd("Project");
-        if(ProjectDir.exists("Project.xml")) {
-            auto button =  QMessageBox::question(this, tr("found Project.xml"), tr("Discover project.xml, whether to load the tag and regenerate the list of images"));
-            if(button == QMessageBox::Yes) {
+        if (ProjectDir.exists("Project.xml")) {
+            auto button = QMessageBox::question(this, tr("found Project.xml"),
+                                                tr("Discover project.xml, whether to load the tag and regenerate the list of images"));
+            if (button == QMessageBox::Yes) {
                 Project.setProjectPath(Imgpath + "/Project/Project.xml");
-                if(!Project.load()) {
-                    QMessageBox::warning(this, tr("error"), tr("File opening failed, confirm whether it is a LabelingMachine project file"));
+                if (!Project.load()) {
+                    QMessageBox::warning(this, tr("error"),
+                                         tr("File opening failed, confirm whether it is a LabelingMachine project file"));
                     return;
                 }
             }
@@ -219,7 +221,7 @@ void MainWindow::on_creat_triggered() {
     dir.setSorting(QDir::DirsFirst);
     QFileInfoList list = dir.entryInfoList();
 
-    if(list.empty()) {
+    if (list.empty()) {
         QMessageBox::warning(this, tr("error"), tr("No files"));
         return;
     }
@@ -230,7 +232,7 @@ void MainWindow::on_creat_triggered() {
 
     int i = 0;
     do {
-        const QFileInfo& fileInfo = list.at(i);
+        const QFileInfo &fileInfo = list.at(i);
         if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") {
             i++;
             continue;
@@ -239,8 +241,7 @@ void MainWindow::on_creat_triggered() {
         image.saveXml();
 
         Project.addImage(image);
-    }
-    while (++i < list.size());
+    } while (++i < list.size());
 
     updateimglist(all);
     Project.save();
@@ -253,25 +254,24 @@ void MainWindow::on_creat_triggered() {
 }
 
 void MainWindow::class_tableWidget_cellClicked(int row, int column) {
-    QTableWidgetItem* item = ui->class_tableWidget->item(row, 1);
+    QTableWidgetItem *item = ui->class_tableWidget->item(row, 1);
     ui->graphicsView->setLabel(row, item->text(), Project.labels.LabelCount());
-    (void)column;
+    (void) column;
 }
 
 void MainWindow::loadimg(const QString &filename) {
-    if(filename != "") {
+    if (filename != "") {
         int index = Project.findImage(filename);
-        if(index >= 0) {
+        if (index >= 0) {
             ui->graphicsView->loadimg(&Project.Images[index]);
             updatelabel(Project.Images[index]);
         }
 
-        QTableWidgetItem* classitem = ui->class_tableWidget->item(0, 1);
-        if(classitem != nullptr) {
+        QTableWidgetItem *classitem = ui->class_tableWidget->item(0, 1);
+        if (classitem != nullptr) {
             ui->graphicsView->setLabel(0, classitem->text(), Project.labels.LabelCount());
             ui->class_tableWidget->setCurrentCell(0, 1);
-        }
-        else ui->graphicsView->setLabel(0, QString(), 0);
+        } else ui->graphicsView->setLabel(0, QString(), 0);
     }
 }
 
@@ -292,7 +292,7 @@ void MainWindow::updatelabel(const ImageData &_Imagedata) {
     ui->label_tableWidget->clearContents();
     ui->label_tableWidget->setRowCount(0);
     int row = 0;
-    for (const BandBox& i : _Imagedata.getBandBoxs()) {
+    for (const BandBox &i : _Imagedata.getBandBoxs()) {
         auto Label_Item = new QTableWidgetItem(i.Label);
         auto Locate_Item = new QTableWidgetItem(QString::asprintf("(%d,%d)", i.Rect.x(), i.Rect.y()));
         ui->label_tableWidget->insertRow(ui->label_tableWidget->rowCount());
@@ -304,19 +304,19 @@ void MainWindow::updatelabel(const ImageData &_Imagedata) {
 
 void MainWindow::updateimglist(int mod) {
     QStringList imgfile;
-    switch(mod) {
-    case all:
-        for(const auto& i : Project.all_Img())
-            imgfile.push_back(i.getImageFilename());
-        break;
-    case Marked:
-        for(const auto& i : Project.has_label_Img())
-            imgfile.push_back(i.getImageFilename());
-        break;
-    case NoMarked:
-        for(const auto& i : Project.no_label_Img())
-            imgfile.push_back(i.getImageFilename());
-        break;
+    switch (mod) {
+        case all:
+            for (const auto &i : Project.all_Img())
+                imgfile.push_back(i.getImageFilename());
+            break;
+        case Marked:
+            for (const auto &i : Project.has_label_Img())
+                imgfile.push_back(i.getImageFilename());
+            break;
+        case NoMarked:
+            for (const auto &i : Project.no_label_Img())
+                imgfile.push_back(i.getImageFilename());
+            break;
     }
     ui->imgs_listWidget->clear();
     ui->imgs_listWidget->addItems(imgfile);
@@ -333,7 +333,7 @@ void MainWindow::on_about_triggered() {
 }
 
 void MainWindow::on_ClientModeAction_triggered() {
-    if(pClientUi == nullptr)
+    if (pClientUi == nullptr)
         pClientUi = new ClientUI(nullptr, this);
     pClientUi->show();
     ui->HostModeAction->setDisabled(true);
@@ -343,27 +343,28 @@ void MainWindow::on_ClientModeAction_triggered() {
 }
 
 void MainWindow::on_HostModeAction_triggered() {
-    if(!Project.isOpened())
-        return;
+    if (Project.isOpened()) {
 
-    if(pServerUi == nullptr)
-        pServerUi = new ServerUI(nullptr, this);
-    pServerUi->show();
+        if (pServerUi == nullptr)
+            pServerUi = new ServerUI(nullptr, this);
+        pServerUi->show();
 
-    while (!pServerUi->isReady()) {
-        if(pServerUi->isFailed()){
-            QMessageBox::warning(this, tr("error"), tr("TCP startup failure"));
-            delete pServerUi;
-            pServerUi = nullptr;
-            return;
+        while (!pServerUi->isReady()) {
+            if (pServerUi->isFailed()) {
+                QMessageBox::warning(this, tr("error"), tr("TCP startup failure"));
+                delete pServerUi;
+                pServerUi = nullptr;
+                return;
+            }
         }
+        ui->ClientModeAction->setDisabled(true);
+        ui->pushButton_3->setDisabled(true);
     }
-    ui->ClientModeAction->setDisabled(true);
-    ui->pushButton_3->setDisabled(true);
 }
 
 void MainWindow::on_Program_Conversion_triggered() {
     module m(this, &Project);
-    if(m.isReady())
+    if (m.isReady()) {
         m.exec();
+    }
 }

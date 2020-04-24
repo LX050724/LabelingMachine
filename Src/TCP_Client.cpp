@@ -3,7 +3,7 @@
 void TCP_Client::run() {
     Socket = new QTcpSocket;
     Socket->connectToHost(Address, 8848);
-    if(!Socket->waitForConnected(5000)) {
+    if (!Socket->waitForConnected(5000)) {
         qInfo() << "ConnectFailed";
         delete Socket;
         Failed = true;
@@ -12,18 +12,18 @@ void TCP_Client::run() {
         return;
     }
     QObject::connect(Socket, &QTcpSocket::disconnected,
-            this, &TCP_Client::Socket_disconnected);
+                     this, &TCP_Client::Socket_disconnected);
 
     Ready = true;
     while (true) {
         while (!Socket->waitForReadyRead(20)) {
             if (!TransmitData.isEmpty()) {
                 Socket->write(TransmitData.front());
-                if(!Socket->waitForBytesWritten())
+                if (!Socket->waitForBytesWritten())
                     throw Socket;
                 TransmitData.pop_front();
             }
-            if(STOP) {
+            if (STOP) {
                 Socket->close();
                 return;
             }
@@ -31,14 +31,14 @@ void TCP_Client::run() {
 
         Data = Socket->readAll();
         const char *p = Data.constData();
-        int Size = ((const int *)p)[0] + sizeof(int);
+        int Size = ((const int *) p)[0] + sizeof(int);
         while (Size != Data.size()) {
-            if(Size < 0){
+            if (Size < 0) {
                 Data.clear();
                 break;
             }
             qDebug() << "incomplete" << Size << Data.size();
-            if(Socket->waitForReadyRead(100))
+            if (Socket->waitForReadyRead(100))
                 Data.push_back(Socket->readAll());
             else break;
         }
@@ -47,20 +47,20 @@ void TCP_Client::run() {
 }
 
 TCP_Client::~TCP_Client() {
-    if(this->isRunning()) {
+    if (this->isRunning()) {
         this->requestInterruption();
         this->quit();
         STOP = true;
         this->wait();
     }
-    if(Socket) {
+    if (Socket) {
         QObject::disconnect(Socket, &QTcpSocket::disconnected,
-                this, &TCP_Client::Socket_disconnected);
+                            this, &TCP_Client::Socket_disconnected);
         delete Socket;
     }
 }
 
-void TCP_Client::Transmit(const QByteArray& _data) {
+void TCP_Client::Transmit(const QByteArray &_data) {
     TransmitData.push_back(_data);
 }
 
@@ -77,7 +77,7 @@ void TCP_Client::Socket_disconnected() {
 }
 
 bool TCP_Client::Connect(const QHostAddress &address) {
-    if(address.isNull())
+    if (address.isNull())
         return false;
     Address = address;
     Failed = false;
@@ -85,7 +85,7 @@ bool TCP_Client::Connect(const QHostAddress &address) {
     STOP = false;
     this->start();
     while (!Ready)
-        if(Failed) {
+        if (Failed) {
             this->wait();
             return false;
         }
@@ -93,7 +93,7 @@ bool TCP_Client::Connect(const QHostAddress &address) {
 }
 
 void TCP_Client::Disconnect() {
-    if(this->isRunning()) {
+    if (this->isRunning()) {
         this->requestInterruption();
         this->quit();
         STOP = true;

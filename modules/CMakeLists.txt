@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
-if(CMAKE_SYSTEM_NAME MATCHES Linux)
+if (UNIX)
     add_subdirectory(yoloV3_voc_mod)
-elseif(CMAKE_SYSTEM_NAME MATCHES Windows)
-endif()
+elseif (WIN32)
+
+endif ()

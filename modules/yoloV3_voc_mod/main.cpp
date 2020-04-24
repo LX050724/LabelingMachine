@@ -11,8 +11,10 @@ using namespace std;
 using namespace tinyxml2;
 
 string ImageProcess(const char *XmlFilename);
+
 bool FileCopy(const char *Src, const char *Dst);
-bool CreateDir(const char* Path);
+
+bool CreateDir(const char *Path);
 
 string XmlPath;
 string ImgPath;
@@ -20,7 +22,7 @@ string ProjectPath;
 string OutputPath;
 
 int main(int argc, char *argv[]) {
-    if(argc < 9) {
+    if (argc < 9) {
         cerr << "error: No Input" << endl;
         return -1;
     }
@@ -41,7 +43,7 @@ int main(int argc, char *argv[]) {
     ofstream log;
     log.open(OutputPath + "/YOLOV3module.log");
 
-    streambuf *streams=cout.rdbuf();//保存原来的cout对象
+    streambuf *streams = cout.rdbuf();//保存原来的cout对象
     cout.rdbuf(log.rdbuf());
     Args.printAll();
     cout.rdbuf(streams);
@@ -85,7 +87,7 @@ int main(int argc, char *argv[]) {
         do {
             if (strcmp(Image->Name(), "Image") == 0) {
                 string filename = ImageProcess(Image->FirstChildElement("XmlFilename")->GetText());
-                if(filename.empty()) continue;
+                if (filename.empty()) continue;
                 cout << filename << " complete!" << endl;
                 log << filename << " complete!" << endl;
                 imglist.push_back(OutputPath + "/JPEGImages/" + filename);
@@ -103,12 +105,12 @@ int main(int argc, char *argv[]) {
     train.open(OutputPath + "/ImageSets/train.txt");
     val.open(OutputPath + "/ImageSets/val.txt");
 
-    for(const string &img : imglist) {
+    for (const string &img : imglist) {
         int n = rand() % 100;
-        if(n <= 85) {
+        if (n <= 85) {
             train << img << endl;
             ++traincount;
-        } else if(n <= 95 && n > 85) {
+        } else if (n <= 95 && n > 85) {
             val << img << endl;
             ++valcount;
         } else {
@@ -179,21 +181,21 @@ bool FileCopy(const char *Src, const char *Dst) {
     struct stat stat{};
     loff_t len, ret;
     fd_in = open(Src, O_RDONLY);
-    if(fd_in == -1)
+    if (fd_in == -1)
         return false;
 
-    if(fstat(fd_in, &stat) == -1) {
+    if (fstat(fd_in, &stat) == -1) {
         close(fd_in);
         return false;
     }
     len = stat.st_size;
     fd_out = open(Dst, O_CREAT | O_WRONLY, 0644);
-    if(fd_out == -1)
+    if (fd_out == -1)
         return false;
 
     do {
         ret = copy_file_range(fd_in, NULL, fd_out, NULL, len, 0);
-        if(ret == -1){
+        if (ret == -1) {
             close(fd_in);
             close(fd_out);
             return false;
@@ -206,10 +208,10 @@ bool FileCopy(const char *Src, const char *Dst) {
     return true;
 }
 
-bool CreateDir(const char* Path) {
-    DIR* tmp = opendir(Path);
-    if(tmp) closedir(tmp);
-    else if(mkdir(Path, 0644) < 0)
+bool CreateDir(const char *Path) {
+    DIR *tmp = opendir(Path);
+    if (tmp) closedir(tmp);
+    else if (mkdir(Path, 0644) < 0)
         return false;
     return true;
 }

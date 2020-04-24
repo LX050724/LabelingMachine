@@ -7,11 +7,10 @@
 #include "ui_mainwindow.h"
 
 ClientUI::ClientUI(QWidget *parent, MainWindow *pmainwindow) :
-    QWidget(parent),
-    Client(new TCP_Client(this)),
-    pMainWindow(pmainwindow),
-    ui(new Ui::ClientUI)
-{
+        QWidget(parent),
+        Client(new TCP_Client(this)),
+        pMainWindow(pmainwindow),
+        ui(new Ui::ClientUI) {
     ui->setupUi(this);
     Image = new QImage;
     pMainWindow->Project.setXmlPath("remote");
@@ -31,22 +30,21 @@ ClientUI::~ClientUI() {
 }
 
 void ClientUI::on_pushButton_clicked() {
-    if(Client->isReady()){
+    if (Client->isReady()) {
         Client->Disconnect();
         ui->pushButton->setText(tr("Connect"));
     } else {
         QHostAddress SeverAddress(ui->lineEdit->text());
-        if(SeverAddress.isNull()){
+        if (SeverAddress.isNull()) {
             QMessageBox::warning(this, tr("error"), tr("IP address error"));
             return;
         }
         Log_println(tr("Begin to connect") + SeverAddress.toString().toUtf8());
-        if(!Client->Connect(SeverAddress)){
+        if (!Client->Connect(SeverAddress)) {
             QMessageBox::warning(this, tr("error"), tr("The connection fails"));
             Log_println(tr("The connection fails"));
             return;
-        }
-        else {
+        } else {
             Log_println(tr("The connection is successful"));
             Log_println(tr("Wait for the server to prepare the signal"));
         }
@@ -66,19 +64,19 @@ void ClientUI::on_pushButton_clicked() {
 }
 
 void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
-    if(array.isEmpty()) {
+    if (array.isEmpty()) {
         qWarning() << "Bad Data";
         loadcomplete = true;
         Log_println(tr("Transmission error. Please try again"));
         return;
     }
-    const char * pData = array.data();
+    const char *pData = array.data();
     int DataSize = ToInt(pData, 0) + sizeof(int);
     int flag = ToInt(pData, 1);
     qDebug() << "Size:" << DataSize << "ID:" << flag;
-    if(DataSize != array.size()) {
-        qWarning() << "Size error" << DataSize + sizeof (int) << array.size();
-        if(!loadcomplete){
+    if (DataSize != array.size()) {
+        qWarning() << "Size error" << DataSize + sizeof(int) << array.size();
+        if (!loadcomplete) {
             Send_IRP(Flag_Image_IRP, filename_now);
         }
         return;
@@ -124,14 +122,14 @@ void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
     }
 }
 
-void ClientUI::Client_Disconnected(){
+void ClientUI::Client_Disconnected() {
     Log_println(tr("Connection is broken"));
     ui->pushButton->setText(tr("The connection"));
 }
 
 void ClientUI::Send_Image_BandBox() {
     /*int size, int flag = Flag_Image_BandBoxs_FB, int w, int h, int len, char[len] filename, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
-    if(filename_now.isEmpty())
+    if (filename_now.isEmpty())
         return;
 
     QByteArray data;
@@ -140,16 +138,16 @@ void ClientUI::Send_Image_BandBox() {
     ImageList[filename_now] = !bandboxs.isEmpty();
 
     QSize imgsize;
-    if(Image != nullptr)
+    if (Image != nullptr)
         imgsize = Image->size();
 
     qDebug() << imgsize;
 
     int head[] = {
-        Flag_Image_BandBoxs_FB,
-        imgsize.width(),
-        imgsize.height(),
-        filename_now.length() };
+            Flag_Image_BandBoxs_FB,
+            imgsize.width(),
+            imgsize.height(),
+            filename_now.length()};
 
     data.push_back(QByteArray(ToCharp(head), sizeof(head)));
     data.push_back(filename_now.toLocal8Bit());
@@ -157,13 +155,13 @@ void ClientUI::Send_Image_BandBox() {
     int BandBoxsCount = bandboxs.size();
     data.push_back(QByteArray(ToCharp(&BandBoxsCount), sizeof(int)));
 
-    for(const BandBox &i : bandboxs) {
+    for (const BandBox &i : bandboxs) {
         int bandbox[] = {
                 i.ID,
                 i.Rect.x(),
                 i.Rect.y(),
                 i.Rect.width(),
-                i.Rect.height() };
+                i.Rect.height()};
         data.push_back(QByteArray(ToCharp(bandbox), sizeof(bandbox)));
     }
     int flag = Flag_Image_BandBoxs_FB;
@@ -195,42 +193,43 @@ void ClientUI::Send_IRP(ClientUI::IRP n, const QString &filename) {
 void ClientUI::Receive_Labels(const QByteArray &array) {
     /*int size, int flag = Flag_Label_IRP, int count, <int len, char[len] label> * count */
     QByteArray DataCopy(array);
-    const char * pData = DataCopy.constData();
+    const char *pData = DataCopy.constData();
     int count = ToInt(pData, 2);
     DataCopy.remove(0, sizeof(int) * 3);
 
-    for(int i = 0; i < count; ++i) {
-        const char * p = DataCopy.constData();
+    for (int i = 0; i < count; ++i) {
+        const char *p = DataCopy.constData();
         int len = ToInt(p, 0);
         pMainWindow->Project.labels.addLabel(QString(DataCopy.mid(sizeof(int), len)));
         DataCopy.remove(0, len + sizeof(int));
     }
     pMainWindow->updateclass();
-    pMainWindow->ui->graphicsView->setLabel(0, pMainWindow->Project.labels[0], pMainWindow->Project.labels.LabelCount());
+    pMainWindow->ui->graphicsView->setLabel(0, pMainWindow->Project.labels[0],
+                                            pMainWindow->Project.labels.LabelCount());
 }
 
 void ClientUI::Receive_Image(const QByteArray &array) {
     /*int size, int flag = Flag_Image_IRP, int ImageSize, char[ImageSize] imgRAW*/
-    const char * pData = array.constData();
+    const char *pData = array.constData();
     int ImageSize = ToInt(pData, 2);
     ImageRAWData = array;
     ImageRAWData.remove(0, sizeof(int) * 3);
     Image->loadFromData(ImageRAWData);
     qDebug() << ImageRAWData.size() << ImageSize;
-    if(ImageRAWData.size() != ImageSize)qWarning("Image data size error");
+    if (ImageRAWData.size() != ImageSize)qWarning("Image data size error");
 }
 
 void ClientUI::Receive_Image_List(const QByteArray &array) {
     /*int size, int imgCount, <int len, char[len] filename> * imgCount */
     QByteArray DataCopy(array);
-    const char * pData = DataCopy.constData();
+    const char *pData = DataCopy.constData();
     int imgCount = ToInt(pData, 2);
     DataCopy.remove(0, sizeof(int) * 3);
 
     //QStringList imglist;
     ImageList.clear();
-    for(int i = 0; i < imgCount; ++i) {
-        const char * p = DataCopy.constData();
+    for (int i = 0; i < imgCount; ++i) {
+        const char *p = DataCopy.constData();
         int len = ToInt(p, 0);
         ImageList.insertMulti(DataCopy.mid(sizeof(int), len), false);
         //imglist.push_back(QString(DataCopy.mid(sizeof(int), len)));
@@ -243,13 +242,13 @@ void ClientUI::Receive_Image_List(const QByteArray &array) {
 void ClientUI::Recrive_Image_BandBoxs(const QByteArray &array) {
     /*int size, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
     QByteArray DataCopy(array);
-    const char * pData = DataCopy.constData();
+    const char *pData = DataCopy.constData();
     int BandBoxsCount = ToInt(pData, 2);
     DataCopy.remove(0, sizeof(int) * 3);
 
     bandBoxs.clear();
-    for(int i = 0; i < BandBoxsCount; ++i) {
-        const int * p = (const int *)DataCopy.constData();
+    for (int i = 0; i < BandBoxsCount; ++i) {
+        const int *p = (const int *) DataCopy.constData();
         QString Label = pMainWindow->Project.labels[p[0]];
         bandBoxs.push_back(BandBox(QRect(p[1], p[2], p[3], p[4]),
                                    Label, p[0]));
@@ -263,43 +262,47 @@ void ClientUI::Receive_Image_HasLabel(const QByteArray &array) {
     const char *phaslabel = pData + sizeof(int) * 3;
     int len = ToInt(pData, 2);
     QVector<QString> filename = ImageList.keys().toVector();
-    for(int i = 0; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         ImageList[filename[i]] = phaslabel[i];
     }
 }
 
 void ClientUI::Proxy_nextimg() {
-    if(loadcomplete) {
+    if (loadcomplete) {
         Send_Image_BandBox();
-        if(pMainWindow->ui->imgs_listWidget->count() > 0) {
+        if (pMainWindow->ui->imgs_listWidget->count() > 0) {
             loadcomplete = false;
             TimeoutTimer.start();
             int row = pMainWindow->ui->imgs_listWidget->currentRow() + 1;
-            QListWidgetItem* Item = pMainWindow->ui->imgs_listWidget->item(row);
-            if(Item != nullptr) {
+            QListWidgetItem *Item = pMainWindow->ui->imgs_listWidget->item(row);
+            if (Item != nullptr) {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 Send_IRP(Flag_Image_IRP, filename_now);
-            } else qInfo() << "next Item is null";
+            } else
+                qInfo() << "next Item is null";
         }
-    } else qInfo("Busy");
+    } else
+        qInfo("Busy");
 }
 
 void ClientUI::Proxy_lastimg() {
-    if(loadcomplete) {
+    if (loadcomplete) {
         Send_Image_BandBox();
-        if(pMainWindow->ui->imgs_listWidget->count() > 0) {
+        if (pMainWindow->ui->imgs_listWidget->count() > 0) {
             loadcomplete = false;
             TimeoutTimer.start();
             int row = pMainWindow->ui->imgs_listWidget->currentRow() - 1;
-            QListWidgetItem* Item = pMainWindow->ui->imgs_listWidget->item(row);
-            if(Item != nullptr) {
+            QListWidgetItem *Item = pMainWindow->ui->imgs_listWidget->item(row);
+            if (Item != nullptr) {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 Send_IRP(Flag_Image_IRP, filename_now);
-            } else qInfo() << "next Item is null";
+            } else
+                qInfo() << "next Item is null";
         }
-    } else qInfo("Busy");
+    } else
+        qInfo("Busy");
 }
 
 void ClientUI::Proxy_Keypress(int Key) {
@@ -311,17 +314,17 @@ void ClientUI::Proxy_Keypress(int Key) {
             Proxy_nextimg();
             break;
     }
-    if(Key == Qt::Key_QuoteLeft || (Qt::Key_0 <= Key && Key <= Qt::Key_9)) {
-        if(Key == Qt::Key_QuoteLeft)
+    if (Key == Qt::Key_QuoteLeft || (Qt::Key_0 <= Key && Key <= Qt::Key_9)) {
+        if (Key == Qt::Key_QuoteLeft)
             Key = 0;
         else
             Key -= Qt::Key_0;
 
         int count = pMainWindow->ui->class_tableWidget->rowCount();
-        if(Key < count) {
+        if (Key < count) {
             pMainWindow->ui->class_tableWidget->setCurrentCell(Key, 0);
-            QTableWidgetItem* Item = pMainWindow->ui->class_tableWidget->item(Key, 1);
-            if(Item != nullptr) {
+            QTableWidgetItem *Item = pMainWindow->ui->class_tableWidget->item(Key, 1);
+            if (Item != nullptr) {
                 pMainWindow->ui->graphicsView->setLabel(Key, Item->text(),
                                                         pMainWindow->Project.labels.LabelCount());
             } else {
@@ -332,13 +335,14 @@ void ClientUI::Proxy_Keypress(int Key) {
 }
 
 void ClientUI::Proxy_imgs_listWidget_itemClicked(QListWidgetItem *item) {
-    if(loadcomplete){
-        if(!item->text().isEmpty()) {
+    if (loadcomplete) {
+        if (!item->text().isEmpty()) {
             Send_Image_BandBox();
             filename_now = item->text();
             Send_IRP(Flag_Image_IRP, filename_now);
         }
-    } else qInfo("Busy");
+    } else
+        qInfo("Busy");
 }
 
 void ClientUI::Proxy_comboBox_currentIndexChanged(int index) {
@@ -351,16 +355,16 @@ void ClientUI::Proxy_comboBox_currentIndexChanged(int index) {
             break;
         }
         case Marked: {
-            for(const QString &i : allimg) {
-                if(ImageList[i])
+            for (const QString &i : allimg) {
+                if (ImageList[i])
                     imglist.push_back(i);
             }
             pMainWindow->ui->imgs_listWidget->addItems(imglist);
             break;
         }
         case NoMarked: {
-            for(const QString &i : allimg) {
-                if(!ImageList[i])
+            for (const QString &i : allimg) {
+                if (!ImageList[i])
                     imglist.push_back(i);
             }
             pMainWindow->ui->imgs_listWidget->addItems(imglist);
@@ -374,7 +378,7 @@ void ClientUI::Proxy_save_triggered() {
 }
 
 void ClientUI::Timer_timeout() {
-    if(!loadcomplete) {
+    if (!loadcomplete) {
         loadcomplete = true;
         QMessageBox::warning(this, tr("warning"), tr("Operation timed out"));
     }
@@ -382,17 +386,17 @@ void ClientUI::Timer_timeout() {
 
 void ClientUI::singleProxy() {
     disconnect(pMainWindow->ui->nextimg_pushButton, &QPushButton::clicked,
-            pMainWindow, &MainWindow::nextimg_pushButton_clicked);
+               pMainWindow, &MainWindow::nextimg_pushButton_clicked);
     disconnect(pMainWindow->ui->lastimg_pushButton, &QPushButton::clicked,
-            pMainWindow, &MainWindow::lastimg_pushButton_clicked);
+               pMainWindow, &MainWindow::lastimg_pushButton_clicked);
     disconnect(pMainWindow->ui->graphicsView, &BandBoxView::Keypress,
-            pMainWindow, &MainWindow::graphicsView_Keypress);
+               pMainWindow, &MainWindow::graphicsView_Keypress);
     disconnect(pMainWindow->ui->imgs_listWidget, &QListWidget::itemClicked,
-            pMainWindow, &MainWindow::imgs_listWidget_itemClicked);
+               pMainWindow, &MainWindow::imgs_listWidget_itemClicked);
     disconnect(pMainWindow->ui->comboBox, SIGNAL(currentIndexChanged(int)),
-            pMainWindow, SLOT(comboBox_currentIndexChanged(int)));
+               pMainWindow, SLOT(comboBox_currentIndexChanged(int)));
     disconnect(pMainWindow->ui->save, &QAction::triggered,
-            pMainWindow, &MainWindow::save_triggered);
+               pMainWindow, &MainWindow::save_triggered);
 
     connect(pMainWindow->ui->nextimg_pushButton, &QPushButton::clicked,
             this, &ClientUI::Proxy_nextimg);
@@ -411,14 +415,14 @@ void ClientUI::singleProxy() {
 inline void ClientUI::Log_printf(const char *format, ...) {
     char buff[200];
     va_list valist;
-    va_start(valist, format);
+            va_start(valist, format);
     vsnprintf(buff, 200, format, valist);
-    va_end(valist);
+            va_end(valist);
     ui->textBrowser->append(buff);
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
-inline void ClientUI::Log_println(const QString& _Log) {
+inline void ClientUI::Log_println(const QString &_Log) {
     ui->textBrowser->append(_Log + '\n');
     ui->textBrowser->moveCursor(QTextCursor::End);
 }

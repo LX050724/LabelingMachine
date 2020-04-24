@@ -6,14 +6,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-ServerUI::ServerUI(QWidget *parent, MainWindow* pmainwindow) :
-    QWidget(parent),
-    ui(new Ui::ServerUI)
-{
+ServerUI::ServerUI(QWidget *parent, MainWindow *pmainwindow) :
+        QWidget(parent),
+        ui(new Ui::ServerUI) {
     ui->setupUi(this);
-    Server = new  TCP_Server(this);
+    Server = new TCP_Server(this);
     pMainWindow = pmainwindow;
-    if(!Server->startListing()) {
+    if (!Server->startListing()) {
         Failed = true;
         return;
     }
@@ -31,34 +30,33 @@ ServerUI::ServerUI(QWidget *parent, MainWindow* pmainwindow) :
             this, &ServerUI::Sever_acceptError);
 }
 
-ServerUI::~ServerUI()
-{
-    if(!Failed) {
+ServerUI::~ServerUI() {
+    if (!Failed) {
         disconnect(Server, &TCP_Server::ReceiveComplete,
-                this, &ServerUI::Sever_ReceiveComplete);
+                   this, &ServerUI::Sever_ReceiveComplete);
         disconnect(Server, &TCP_Server::TCPNewConnection,
-                this, &ServerUI::Sever_TCPNewConnection);
+                   this, &ServerUI::Sever_TCPNewConnection);
         disconnect(Server, &TCP_Server::TCPDisconnected,
-                this, &ServerUI::Sever_TCPDisconnected);
+                   this, &ServerUI::Sever_TCPDisconnected);
         disconnect(Server, &TCP_Server::acceptError,
-                this, &ServerUI::Sever_acceptError);
+                   this, &ServerUI::Sever_acceptError);
     }
     delete Server;
     delete ui;
 }
 
 void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress &Address) {
-    if(Data.isEmpty()) {
+    if (Data.isEmpty()) {
         qWarning() << "Bad Data";
         Log_println(tr("Transmission error. Please try again"));
         return;
     }
-    const char * pData = Data.data();
+    const char *pData = Data.data();
     int DataSize = ToInt(pData, 0);
     int flag = ToInt(pData, 1);
     qDebug() << "Size:" << DataSize << "ID:" << flag;
-    if(DataSize != Data.size() - (int)sizeof(int)) {
-        qWarning() << "Size error" << DataSize + sizeof (int) << Data.size();
+    if (DataSize != Data.size() - (int) sizeof(int)) {
+        qWarning() << "Size error" << DataSize + sizeof(int) << Data.size();
         return;
     }
     switch (flag) {
@@ -73,7 +71,7 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
             QString name(Data.mid(sizeof(int) * 3, len));
             Send_Image(Address, name);
             Log_printf("Received a request from %s to get a picture %s\n",
-                    QHostAddress2c_str(Address), name.toStdString().c_str());
+                       QHostAddress2c_str(Address), name.toStdString().c_str());
             break;
         }
         case Flag_Image_BandBoxs_IRP: {
@@ -81,7 +79,7 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
             QString name(Data.mid(sizeof(int) * 3, len));
             Send_Image_BandBoxs(Address, name);
             Log_printf("Received a Bandbox request from %s to get %s\n",
-                    QHostAddress2c_str(Address), name.toStdString().c_str());
+                       QHostAddress2c_str(Address), name.toStdString().c_str());
             break;
         }
         case Flag_Image_List_IRP: {
@@ -100,7 +98,7 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
 }
 
 void ServerUI::on_pushButton_clicked() {
-    if((ClientConut = Server->getCilentConut()) == 0) {
+    if ((ClientConut = Server->getCilentConut()) == 0) {
         QMessageBox::warning(this, tr("error"), tr("No client connection"));
         return;
     }
@@ -113,14 +111,14 @@ void ServerUI::on_pushButton_clicked() {
 
     Log_printf("Assigned to complete\nThe total number of %d\n", pMainWindow->Project.all_Img().size());
     Log_printf("Server:%d\n", TaskList.front().size());
-    for(int i = 0; i < ClientList.size(); ++i) {
+    for (int i = 0; i < ClientList.size(); ++i) {
         Log_printf("%s:%d\n", ClientList[i].toString().toStdString().c_str(),
                    TaskList[i + 1].size());
         SendSingle_Ready(ClientList[i]);
     }
 
     disconnect(pMainWindow->ui->comboBox, SIGNAL(currentIndexChanged(int)),
-            pMainWindow, SLOT(comboBox_currentIndexChanged(int)));
+               pMainWindow, SLOT(comboBox_currentIndexChanged(int)));
 
     connect(pMainWindow->ui->comboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(Proxy_comboBox_currentIndexChanged(int)));
@@ -128,8 +126,8 @@ void ServerUI::on_pushButton_clicked() {
 
 void ServerUI::Sever_TCPNewConnection(const QHostAddress &Address) {
     QList<QString> Addresslist;
-    if(ClientConut > 0) {
-        if(ClientList.indexOf(Address) >= 0) {
+    if (ClientConut > 0) {
+        if (ClientList.indexOf(Address) >= 0) {
             Log_printf("%s To access\n", ToCharp(Address.toString().toLocal8Bit()));
             Log_println("Start signal");
             SendSingle_Ready(Address);
@@ -137,7 +135,7 @@ void ServerUI::Sever_TCPNewConnection(const QHostAddress &Address) {
     } else {
         Log_printf("%s access\n", ToCharp(Address.toString().toLocal8Bit()));
     }
-    for(const QHostAddress& i : Server->getClientAddressList())
+    for (const QHostAddress &i : Server->getClientAddressList())
         Addresslist.push_back(i.toString());
     ui->listWidget->clear();
     ui->listWidget->addItems(Addresslist);
@@ -145,10 +143,10 @@ void ServerUI::Sever_TCPNewConnection(const QHostAddress &Address) {
 }
 
 void ServerUI::Sever_TCPDisconnected(const QHostAddress &Address) {
-    if(ClientConut >= 0 && ClientList.indexOf(Address) == -1)
+    if (ClientConut >= 0 && ClientList.indexOf(Address) == -1)
         return;
     QList<QString> Addresslist;
-    for(const QHostAddress& i : Server->getClientAddressList())
+    for (const QHostAddress &i : Server->getClientAddressList())
         Addresslist.push_back(i.toString());
     ui->listWidget->clear();
     ui->listWidget->addItems(Addresslist);
@@ -161,28 +159,28 @@ void ServerUI::Sever_acceptError(QAbstractSocket::SocketError socketError) {
 }
 
 void ServerUI::Proxy_comboBox_currentIndexChanged(int index) {
-    if(TaskList.isEmpty())
+    if (TaskList.isEmpty())
         return;
 
     QStringList Itmes;
     switch (index) {
         case all: {
-            for(const QString &i : TaskList.front())
+            for (const QString &i : TaskList.front())
                 Itmes.push_back(i);
             break;
         }
         case Marked: {
-            for(const QString &i : TaskList.front()) {
+            for (const QString &i : TaskList.front()) {
                 int Index = pMainWindow->Project.findImage(i);
-                if(pMainWindow->Project.Images[Index].isHasLabel())
+                if (pMainWindow->Project.Images[Index].isHasLabel())
                     Itmes.push_back(i);
             }
             break;
         }
         case NoMarked: {
-            for(const QString &i : TaskList.front()) {
+            for (const QString &i : TaskList.front()) {
                 int Index = pMainWindow->Project.findImage(i);
-                if(!pMainWindow->Project.Images[Index].isHasLabel())
+                if (!pMainWindow->Project.Images[Index].isHasLabel())
                     Itmes.push_back(i);
             }
             break;
@@ -195,14 +193,14 @@ void ServerUI::Proxy_comboBox_currentIndexChanged(int index) {
 inline void ServerUI::Log_printf(const char *format, ...) {
     char buff[200];
     va_list valist;
-    va_start(valist, format);
+            va_start(valist, format);
     vsnprintf(buff, 200, format, valist);
-    va_end(valist);
+            va_end(valist);
     ui->textBrowser->append(buff);
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
-inline void ServerUI::Log_println(const QString& _Log) {
+inline void ServerUI::Log_println(const QString &_Log) {
     ui->textBrowser->append(_Log + '\n');
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
@@ -215,14 +213,14 @@ inline void ServerUI::Log_putc(char c) {
 void ServerUI::allocation(const QVector<ImageData> &Img) {
     int div = Img.size() / (ClientConut + 1);
     QVector<QString> Task;
-    for(int n = 0; n < ClientConut; ++n) {
-        for(int i = 0; i < div; ++i) {
+    for (int n = 0; n < ClientConut; ++n) {
+        for (int i = 0; i < div; ++i) {
             Task.push_back(Img[div * n + i].getImageFilename());
         }
         TaskList.push_back(Task);
         Task.clear();
     }
-    for(int i = div * ClientConut; i < Img.size(); ++i) {
+    for (int i = div * ClientConut; i < Img.size(); ++i) {
         Task.push_back(Img[i].getImageFilename());
     }
     TaskList.push_back(Task);
@@ -240,7 +238,7 @@ void ServerUI::Send_Labels(const QHostAddress &Address) {
     QVector<QString> labels = pMainWindow->Project.labels.getLabels();
     int count = labels.size();
     QByteArray data(ToCharp(&count), sizeof(int));
-    for(const QString &i : labels) {
+    for (const QString &i : labels) {
         int Len = i.length();
         data.push_back(QByteArray(ToCharp(&Len), sizeof(int)));
         data.push_back(i.toLocal8Bit());
@@ -266,7 +264,7 @@ void ServerUI::Send_Image(const QHostAddress &Address, const QString &name) {
 
     int head[] = {
             Flag_Image_IRP,
-            imgdata.size() };
+            imgdata.size()};
     QByteArray data(ToCharp(head), sizeof(head));
     data.push_back(imgdata);
 
@@ -282,7 +280,7 @@ void ServerUI::Send_Image_List(const QHostAddress &Address) {
     int imgCount = imgs.size();
     QByteArray data(ToCharp(&imgCount), sizeof(int));
 
-    for(const QString &i : imgs) {
+    for (const QString &i : imgs) {
         int len = i.length();
         data.push_back(QByteArray(ToCharp(&len), sizeof(int)));
         data.push_back(i.toLocal8Bit());
@@ -297,19 +295,19 @@ void ServerUI::Send_Image_List(const QHostAddress &Address) {
     Send_Image_HasLabel(Address);
 }
 
-void ServerUI::Send_Image_BandBoxs(const QHostAddress& Address, const QString &name) {
+void ServerUI::Send_Image_BandBoxs(const QHostAddress &Address, const QString &name) {
     /*int size, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
     int Index = pMainWindow->Project.findImage(name);
     QVector<BandBox> BandBoxs = pMainWindow->Project.all_Img()[Index].getBandBoxs();
 
     int BandBoxsCount = BandBoxs.size();
     QByteArray data(ToCharp(&BandBoxsCount), sizeof(int));
-    for(const BandBox &i : BandBoxs) {
-        int buff[5] = { i.ID,
-                        i.Rect.x(),
-                        i.Rect.y(),
-                        i.Rect.width(),
-                        i.Rect.height()};
+    for (const BandBox &i : BandBoxs) {
+        int buff[5] = {i.ID,
+                       i.Rect.x(),
+                       i.Rect.y(),
+                       i.Rect.width(),
+                       i.Rect.height()};
         data.push_back(QByteArray(ToCharp(buff), sizeof(int) * 5));
     }
 
@@ -323,7 +321,7 @@ void ServerUI::Send_Image_BandBoxs(const QHostAddress& Address, const QString &n
 const QString ServerUI::Receive_Image_BandBox(const QByteArray &array) {
     /*int size, int flag = Flag_Image_BandBoxs_FB, int w, int h, int len, char[len] filename, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
     QByteArray DataCopy(array);
-    const char * pData = DataCopy.constData();
+    const char *pData = DataCopy.constData();
     int w = ToInt(pData, 3);
     int h = ToInt(pData, 4);
     int len = ToInt(pData, 5);
@@ -335,8 +333,8 @@ const QString ServerUI::Receive_Image_BandBox(const QByteArray &array) {
     int BandBoxsCount = ToInt(pData, 0);
     DataCopy.remove(0, sizeof(int));
     QVector<BandBox> bandBoxs;
-    for(int i = 0; i < BandBoxsCount; ++i) {
-        const int * p = (const int *)DataCopy.constData();
+    for (int i = 0; i < BandBoxsCount; ++i) {
+        const int *p = (const int *) DataCopy.constData();
         QString Label = pMainWindow->Project.labels[p[0]];
         bandBoxs.push_back(BandBox(
                 QRect(p[1], p[2], p[3], p[4]),
@@ -344,12 +342,13 @@ const QString ServerUI::Receive_Image_BandBox(const QByteArray &array) {
         DataCopy.remove(0, sizeof(int) * 5);
     }
     int Index = pMainWindow->Project.findImage(filename);
-    if(Index >= 0) {
+    if (Index >= 0) {
         qDebug() << w << h;
         pMainWindow->Project.Images[Index].setsize(QSize(w, h));
         pMainWindow->Project.Images[Index].setBandBoxs(bandBoxs);
         pMainWindow->Project.Images[Index].saveXml();
-    } else qWarning("Receive_Image_BandBox error");
+    } else
+        qWarning("Receive_Image_BandBox error");
     return filename;
 }
 
@@ -359,13 +358,13 @@ const char *ServerUI::QHostAddress2c_str(const QHostAddress &Address) {
 
 void ServerUI::Send_Image_HasLabel(const QHostAddress &Address) {
     /*int size, int flag = Flag_Image_haslabel, int len, char[len] haslabel*/
-    if(!ClientList.isEmpty()) {
+    if (!ClientList.isEmpty()) {
         int Index = ClientList.indexOf(Address);
         QVector<QString> imagelist = TaskList[Index + 1];
         QByteArray data;
-        int head[] = {Flag_Image_haslabel, imagelist.size() };
+        int head[] = {Flag_Image_haslabel, imagelist.size()};
         data.push_back(QByteArray(ToCharp(&head), sizeof(head)));
-        for(const QString &filename : imagelist) {
+        for (const QString &filename : imagelist) {
             int i = pMainWindow->Project.findImage(filename);
             char haslabel = pMainWindow->Project.Images[i].isHasLabel();
             data.push_back(haslabel);

@@ -11,9 +11,8 @@
 #include <Labels.h>
 #include <imagedata.h>
 
-class LabelingMaching
-{    
-protected:    
+class LabelingMaching {
+protected:
     QString ProjectPath;
 
     int ImgCount = 0;
@@ -24,41 +23,54 @@ public:
     Labels labels;
     QVector<ImageData> Images;
 
-    LabelingMaching()= default;
-    LabelingMaching(const QString& _Path): ProjectPath(_Path){}
+    LabelingMaching() = default;
 
-    void setProjectPath(const QString& _Path);
+    LabelingMaching(const QString &_Path) : ProjectPath(_Path) {}
+
+    void setProjectPath(const QString &_Path);
 
     bool load();
+
     bool save();
 
     inline void setImgCount(int _ImgCount) { ImgCount = _ImgCount; }
-    inline void setImgPath(const QString& _ImgPath) { ImgPath = _ImgPath; }
-    inline void setXmlPath(const QString& _XmlPath) { XmlPath = _XmlPath; }
-    inline const QString& getXmlPath() { return XmlPath; }
-    inline const QString& getImgPath() const { return ImgPath; }
-    inline const QString& getProjectPath() const { return ProjectPath; }
+
+    inline void setImgPath(const QString &_ImgPath) { ImgPath = _ImgPath; }
+
+    inline void setXmlPath(const QString &_XmlPath) { XmlPath = _XmlPath; }
+
+    inline const QString &getXmlPath() { return XmlPath; }
+
+    inline const QString &getImgPath() const { return ImgPath; }
+
+    inline const QString &getProjectPath() const { return ProjectPath; }
 
     inline bool isOpened() const {
         return (!ImgPath.isEmpty() && !XmlPath.isEmpty());
     }
 
     inline bool isRemote() const {
-        return (ImgPath == "remote" && XmlPath== "remote");
+        return (ImgPath == "remote" && XmlPath == "remote");
     }
 
-    void addImage(const ImageData& Image);
+    void addImage(const ImageData &Image);
+
     void deleteImage(int Index);
-    int findImage(const QString& filename);
+
+    int findImage(const QString &filename);
 
     QVector<ImageData> has_label_Img();
-    const QVector<ImageData>& all_Img() const;
+
+    const QVector<ImageData> &all_Img() const;
+
     QVector<ImageData> no_label_Img();
 
 private:
-    void parseProjectMembers(const QDomElement& Node);
-    void parseLabelsMembers(const QDomElement& Node);
-    void parseImageMembers(const QDomElement& Node);
+    void parseProjectMembers(const QDomElement &Node);
+
+    void parseLabelsMembers(const QDomElement &Node);
+
+    void parseImageMembers(const QDomElement &Node);
 };
 
 #endif // LEABLINGMACHING_H

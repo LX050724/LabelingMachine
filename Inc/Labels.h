@@ -4,27 +4,28 @@
 #include <QString>
 #include <QVector>
 
-class Labels
-{
+class Labels {
 protected:
     friend class classeditor;
     QVector<QString> labels;
 public:
-    Labels()= default;
-    Labels(const QVector<QString>& _labels): labels(_labels){}
+    Labels() = default;
+
+    Labels(const QVector<QString> &_labels) : labels(_labels) {}
+
     Labels(const Labels &Copy) : labels(Copy.labels) {}
 
-    inline const QVector<QString>& getLabels() const {
+    inline const QVector<QString> &getLabels() const {
         return labels;
     }
 
-    inline const QString operator[] (int ID) const {
-        if(ID >= labels.size())
+    inline const QString operator[](int ID) const {
+        if (ID >= labels.size())
             return QString();
         return labels[ID];
     }
 
-    inline int operator[] (const QString& name) const {
+    inline int operator[](const QString &name) const {
         return labels.indexOf(name);
     }
 
@@ -32,19 +33,19 @@ public:
         return labels.size();
     }
 
-    inline void addLabel(const QString& name, int ID = -1) {
-        if(ID >= 0)
+    inline void addLabel(const QString &name, int ID = -1) {
+        if (ID >= 0)
             labels.insert(ID, name);
         else
             labels.push_back(name);
     }
 
     inline void deleteLabel(const int ID) {
-        if(ID >= 0)
+        if (ID >= 0)
             labels.erase(labels.begin() + ID);
     }
 
-    inline void deleteLabel(const QString& name) {
+    inline void deleteLabel(const QString &name) {
         deleteLabel(this->operator[](name));
     }
 };

@@ -4,15 +4,15 @@
 #include <QDialog>
 
 namespace Ui {
-class HelpWIndow;
+    class HelpWIndow;
 }
 
-class HelpWIndow : public QDialog
-{
-    Q_OBJECT
+class HelpWIndow : public QDialog {
+Q_OBJECT
 
 public:
     explicit HelpWIndow(QWidget *parent = nullptr);
+
     ~HelpWIndow();
 
 private:

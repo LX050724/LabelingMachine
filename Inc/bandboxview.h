@@ -13,13 +13,13 @@
 #include <bandbox.h>
 #include <imagedata.h>
 
-class BandBoxView : public QGraphicsView
-{
-    Q_OBJECT
+class BandBoxView : public QGraphicsView {
+Q_OBJECT
+
     QColor get_QColor(int index, int a);
+
 public:
-    explicit BandBoxView(QWidget *parent = nullptr) : QGraphicsView(parent)
-    {   }
+    explicit BandBoxView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
 
 signals:
 
@@ -27,12 +27,16 @@ protected:
     friend class BandBox;
 
     void mouseMoveEvent(QMouseEvent *event);
+
     void mousePressEvent(QMouseEvent *event);
+
     void mouseReleaseEvent(QMouseEvent *event);
+
     void keyPressEvent(QKeyEvent *event);
+
     void wheelEvent(QWheelEvent *event);
 
-    ImageData* Data = nullptr;
+    ImageData *Data = nullptr;
 
     QImage Image;
     QGraphicsScene Scene;
@@ -41,7 +45,7 @@ protected:
     QPointF PressPoint;
     volatile bool drawingflag = false;
     QRect drawing;
-    QGraphicsRectItem* drawingItem = nullptr;
+    QGraphicsRectItem *drawingItem = nullptr;
 
     QPointF transPoint;
     QPointF posPoint;
@@ -53,8 +57,9 @@ protected:
     int LabelCount = 0;
 
     float get_color(int c, int x, int max);
+
 public:
-    void loadimg(ImageData* Image);
+    void loadimg(ImageData *Image);
 
     inline void setLabel(int id, QString label, int count) {
         ID = id;
@@ -67,8 +72,11 @@ public:
     }
 
 signals:
+
     void drawBandBox(BandBox);
+
     void deletBox();
+
     void Keypress(int);
 };
 

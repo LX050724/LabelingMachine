@@ -6,19 +6,21 @@
 #include <Labels.h>
 
 namespace Ui {
-class classeditor;
+    class classeditor;
 }
 
-class classeditor : public QDialog
-{
-    Q_OBJECT
+class classeditor : public QDialog {
+Q_OBJECT
 
 public:
     explicit classeditor(QWidget *parent = nullptr);
-    classeditor(QWidget *parent = nullptr, Labels* _labels = nullptr);
+
+    classeditor(QWidget *parent = nullptr, Labels *_labels = nullptr);
+
     ~classeditor();
 
 private slots:
+
     void on_deletepushButton_clicked();
 
     void on_tableWidget_cellChanged(int row, int column);
@@ -33,7 +35,7 @@ private:
     Ui::classeditor *ui;
 
 protected:
-    Labels* labels;
+    Labels *labels;
 
 };
 

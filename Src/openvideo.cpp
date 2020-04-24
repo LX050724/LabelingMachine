@@ -8,45 +8,41 @@
 #include <iostream>
 
 openvideo::openvideo(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::openvideo)
-{
+        QDialog(parent),
+        ui(new Ui::openvideo) {
     ui->setupUi(this);
 }
 
-openvideo::~openvideo()
-{
+openvideo::~openvideo() {
     delete videoframe;
     delete ui;
 }
 
-void openvideo::on_videotoolButton_clicked()
-{
+void openvideo::on_videotoolButton_clicked() {
 #ifdef linux
     QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users",
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
     qInfo() << "videopath:" << dirpath;
     ui->videolineEdit->setText(dirpath);
 }
 
-void openvideo::on_outtoolButton_clicked()
-{
+void openvideo::on_outtoolButton_clicked() {
 #ifdef linux
     QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users",
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #endif
     qInfo() << "outpath:" << dirpath;
     ui->outlineEdit->setText(dirpath);
 }
 
-void openvideo::on_OKpushButton_clicked()
-{
-    if(ui->outlineEdit->text().length() == 0 ||
-       ui->videolineEdit->text().length() == 0)
-    {
+void openvideo::on_OKpushButton_clicked() {
+    if (ui->outlineEdit->text().length() == 0 ||
+        ui->videolineEdit->text().length() == 0) {
         QMessageBox::warning(this, tr("Select the file"), tr("Path incomplete"));
         return;
     }
@@ -70,15 +66,15 @@ void openvideo::on_OKpushButton_clicked()
 
     video.open(VideoPath);
 
-    if(video.isOpened())
-    {
+    if (video.isOpened()) {
         int div = ui->spinBox->value();
         int frame_count = video.get(cv::CAP_PROP_FRAME_COUNT);
         qInfo() << "CAP_PROP_FRAME_COUNT = " << frame_count;
         auto button = QMessageBox::question(this, tr("confirm"),
-                tr("There are") + QString::number(frame_count) +
-                tr("frames of video,Extraction of") + QString::number(frame_count / div) + tr("frames"));
-        if(button == QMessageBox::Yes) {
+                                            tr("There are") + QString::number(frame_count) +
+                                            tr("frames of video,Extraction of") + QString::number(frame_count / div) +
+                                            tr("frames"));
+        if (button == QMessageBox::Yes) {
             videoframe = new VideoFrame(this, this);
         }
     } else {
@@ -111,15 +107,14 @@ void VideoFrame::run() {
     cv::Mat tmp;
 
     std::vector<int> FLAG = {
-        cv::IMWRITE_JPEG_PROGRESSIVE, 1,
-        cv::IMWRITE_JPEG_OPTIMIZE, 1
+            cv::IMWRITE_JPEG_PROGRESSIVE, 1,
+            cv::IMWRITE_JPEG_OPTIMIZE, 1
     };
 
     while (UIclass->video.read(tmp)) {
-        if(count % div == 0)
-        {
+        if (count % div == 0) {
             char buffer[10];
-            sprintf(buffer, "%05d", count);
+            sprintf_s(buffer, "%05d", count);
             cv::imwrite(UIclass->JPEGName + buffer + ".jpg", tmp, FLAG);
         }
         ++count;
@@ -130,8 +125,7 @@ void VideoFrame::run() {
 }
 
 VideoFrame::VideoFrame(QObject *parent, openvideo *uiclass) :
-    QThread(parent), UIclass(uiclass)
-{
+        QThread(parent), UIclass(uiclass) {
     this->start();
     connect(this, SIGNAL(complete()), UIclass, SLOT(VideoFramecomplete()),
             Qt::QueuedConnection);

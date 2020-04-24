@@ -9,17 +9,16 @@
 #include "imagedata.h"
 
 namespace Ui {
-class ServerUI;
+    class ServerUI;
 }
 
 class MainWindow;
 
-class ServerUI : public QWidget
-{
-    Q_OBJECT
+class ServerUI : public QWidget {
+Q_OBJECT
 
-    MainWindow* pMainWindow = nullptr;
-    TCP_Server* Server = nullptr;
+    MainWindow *pMainWindow = nullptr;
+    TCP_Server *Server = nullptr;
     int ClientConut = 0;
     volatile bool Ready = false;
     volatile bool Failed = false;
@@ -28,19 +27,23 @@ class ServerUI : public QWidget
     QList<QHostAddress> ClientList;
 
 public:
-    explicit ServerUI(QWidget *parent = nullptr, MainWindow* pmainwindow = nullptr);
+    explicit ServerUI(QWidget *parent = nullptr, MainWindow *pmainwindow = nullptr);
+
     ~ServerUI();
 
     inline bool isReady() const { return Ready; }
+
     inline bool isFailed() const { return Failed; }
 
 private:
-#define ToInt(p,Index) (((const int *)p)[Index])
+#define ToInt(p, Index) (((const int *)p)[Index])
 #define ToCharp(p) ((const char *)p)
 
-    enum {all,Marked, NoMarked};
+    enum {
+        all, Marked, NoMarked
+    };
 
-    typedef enum IRP{
+    typedef enum IRP {
         Flag_Ready = 1,
         Flag_Label_IRP,
         Flag_Image_IRP,
@@ -50,26 +53,39 @@ private:
         Flag_Image_haslabel
     } IRP;
     Ui::ServerUI *ui;
-    void allocation(const QVector<ImageData>& Img);
 
-    void SendSingle_Ready(const QHostAddress& Address);
-    void Send_Labels(const QHostAddress& Address);
-    void Send_Image(const QHostAddress& Address, const QString &name);
-    void Send_Image_List(const QHostAddress& Address);
-    void Send_Image_BandBoxs(const QHostAddress& Address, const QString &name);
-    void Send_Image_HasLabel(const QHostAddress& Address);
+    void allocation(const QVector<ImageData> &Img);
+
+    void SendSingle_Ready(const QHostAddress &Address);
+
+    void Send_Labels(const QHostAddress &Address);
+
+    void Send_Image(const QHostAddress &Address, const QString &name);
+
+    void Send_Image_List(const QHostAddress &Address);
+
+    void Send_Image_BandBoxs(const QHostAddress &Address, const QString &name);
+
+    void Send_Image_HasLabel(const QHostAddress &Address);
+
     const QString Receive_Image_BandBox(const QByteArray &array);
 
     void Log_println(const QString &_Log);
+
     void Log_putc(char c);
+
     void Log_printf(const char *format, ...);
 
-    static const char * QHostAddress2c_str(const QHostAddress& Address);
+    static const char *QHostAddress2c_str(const QHostAddress &Address);
 
 private slots:
-    void Sever_ReceiveComplete(const QByteArray& arrary, const QHostAddress& Address);
-    void Sever_TCPNewConnection(const QHostAddress& Address);
-    void Sever_TCPDisconnected(const QHostAddress& Address);
+
+    void Sever_ReceiveComplete(const QByteArray &arrary, const QHostAddress &Address);
+
+    void Sever_TCPNewConnection(const QHostAddress &Address);
+
+    void Sever_TCPDisconnected(const QHostAddress &Address);
+
     void Sever_acceptError(QAbstractSocket::SocketError socketError);
 
     void on_pushButton_clicked();

@@ -1,6 +1,6 @@
 ﻿#include "labelingmaching.h"
 
-void LabelingMaching::addImage(const ImageData& Image) {
+void LabelingMaching::addImage(const ImageData &Image) {
     Images.push_back(Image);
 }
 
@@ -9,8 +9,8 @@ void LabelingMaching::deleteImage(int Index) {
 }
 
 int LabelingMaching::findImage(const QString &filename) {
-    for(int i = 0; i < Images.size(); ++i) {
-        if(Images[i].getImageFilename() == filename)
+    for (int i = 0; i < Images.size(); ++i) {
+        if (Images[i].getImageFilename() == filename)
             return i;
     }
     return -1;
@@ -18,21 +18,21 @@ int LabelingMaching::findImage(const QString &filename) {
 
 QVector<ImageData> LabelingMaching::has_label_Img() {
     QVector<ImageData> tmp;
-    for(auto& img : Images) {
-        if(img.isHasLabel())
+    for (auto &img : Images) {
+        if (img.isHasLabel())
             tmp.push_back(img);
     }
     return tmp;
 }
 
-const QVector<ImageData>& LabelingMaching::all_Img() const {
+const QVector<ImageData> &LabelingMaching::all_Img() const {
     return Images;
 }
 
 QVector<ImageData> LabelingMaching::no_label_Img() {
     QVector<ImageData> tmp;
-    for(ImageData &img : Images) {
-        if(!img.isHasLabel())
+    for (ImageData &img : Images) {
+        if (!img.isHasLabel())
             tmp.push_back(img);
     }
     return tmp;
@@ -44,20 +44,20 @@ void LabelingMaching::setProjectPath(const QString &_Path) {
 }
 
 bool LabelingMaching::load() {
-    if(ProjectPath.isEmpty())
+    if (ProjectPath.isEmpty())
         return false;
 
     QFile File(ProjectPath);
-    if(!File.open(QFile::ReadOnly | QFile::Text))
+    if (!File.open(QFile::ReadOnly | QFile::Text))
         return false;
 
     QDomDocument XmlReader;
-    if(!XmlReader.setContent(&File))
+    if (!XmlReader.setContent(&File))
         return false;
 
     QDomElement root = XmlReader.documentElement();
 
-    if(root.nodeName() == "LablingMachineProject") {
+    if (root.nodeName() == "LablingMachineProject") {
         parseProjectMembers(root.firstChildElement("Project"));
         parseLabelsMembers(root.firstChildElement("Labels"));
         QDomElement Image = root.firstChildElement("Image");
@@ -74,18 +74,18 @@ bool LabelingMaching::load() {
     return true;
 }
 
-void LabelingMaching::parseProjectMembers(const QDomElement& Node) {
+void LabelingMaching::parseProjectMembers(const QDomElement &Node) {
     ImgCount = Node.firstChildElement("ImgCount").text().toInt();
     ImgPath = Node.firstChildElement("ImgPath").text();
     XmlPath = Node.firstChildElement("XmlPath").text();
 }
 
-void LabelingMaching::parseLabelsMembers(const QDomElement& Node) {
+void LabelingMaching::parseLabelsMembers(const QDomElement &Node) {
     QDomNodeList childs = Node.childNodes();
-    for(int i = 0; i < childs.length(); ++i) {
+    for (int i = 0; i < childs.length(); ++i) {
         QDomNode child = childs.at(i);
         QString nodeName = child.nodeName();
-        if(nodeName == "label") {
+        if (nodeName == "label") {
             int ID = child.firstChildElement("ID").text().toInt();
             QString name = child.firstChildElement("Name").text();
             labels.addLabel(name, ID);
@@ -93,7 +93,7 @@ void LabelingMaching::parseLabelsMembers(const QDomElement& Node) {
     }
 }
 
-void LabelingMaching::parseImageMembers(const QDomElement& Node) {
+void LabelingMaching::parseImageMembers(const QDomElement &Node) {
     QString imagename = Node.firstChildElement("ImageFilename").text();
     QString xmlname = Node.firstChildElement("XmlFilename").text();
 
@@ -101,14 +101,14 @@ void LabelingMaching::parseImageMembers(const QDomElement& Node) {
 }
 
 bool LabelingMaching::save() {
-    if(ProjectPath.isEmpty())
+    if (ProjectPath.isEmpty())
         return false;
 
-    if(ImgPath == "remote" && XmlPath == "remote")
+    if (ImgPath == "remote" && XmlPath == "remote")
         return true;
 
     QFile File(ProjectPath);
-    if(!File.open(QFile::WriteOnly | QFile::Text))
+    if (!File.open(QFile::WriteOnly | QFile::Text))
         return false;
 
     QTextStream textStream(&File);
@@ -138,7 +138,7 @@ bool LabelingMaching::save() {
     QDomElement LabelsElement = XmlReader.createElement("Labels");
 
     QVector<QString> labelVec = labels.getLabels();
-    for(int i = 0; i < labelVec.size(); ++i) {
+    for (int i = 0; i < labelVec.size(); ++i) {
         QDomElement labelElement = XmlReader.createElement("label");
 
         QDomElement IDElement = XmlReader.createElement("ID");
@@ -154,7 +154,7 @@ bool LabelingMaching::save() {
     root.appendChild(LabelsElement);
     //LabelsElement End
 
-    for(int i = 0; i < Images.size(); ++i) {
+    for (int i = 0; i < Images.size(); ++i) {
         QDomElement ImageElement = XmlReader.createElement("Image");
 
         QDomElement Img_PathElement = XmlReader.createElement("ImageFilename");

@@ -5,10 +5,9 @@
 #include "labelingmaching.h"
 
 module::module(QWidget *parent, LabelingMaching *project) :
-    QDialog(parent),
-    pProject(project),
-    ui(new Ui::module)
-{
+        QDialog(parent),
+        pProject(project),
+        ui(new Ui::module) {
     ui->setupUi(this);
     QString modulepath;
     QString outputpath;
@@ -22,10 +21,10 @@ module::module(QWidget *parent, LabelingMaching *project) :
         return;
 #else
     modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "C:/Users");
-    if(modulepath.isEmpty())
+    if (modulepath.isEmpty())
         return;
     outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), "C:/Users");
-    if(outputpath.isEmpty())
+    if (outputpath.isEmpty())
         return;
 #endif
 
@@ -43,7 +42,7 @@ module::module(QWidget *parent, LabelingMaching *project) :
     Process = new QProcess(this);
     Process->setProgram(modulepath);
     Process->setArguments(Arguments);
-    if(!Process->open()) {
+    if (!Process->open()) {
         QMessageBox::warning(this, tr("error"), tr("Create Process failed"));
         this->close();
     }
@@ -51,25 +50,24 @@ module::module(QWidget *parent, LabelingMaching *project) :
     connect(Process, &QProcess::readyReadStandardOutput,
             this, &module::QProcess_readyReadStandardOutput);
 
-    connect(Process, SIGNAL(finished(int,QProcess::ExitStatus)),
-            this, SLOT(QProcess_finished(int,QProcess::ExitStatus)));
+    connect(Process, SIGNAL(finished(int, QProcess::ExitStatus)),
+            this, SLOT(QProcess_finished(int, QProcess::ExitStatus)));
 }
 
-module::~module()
-{
-    if(Ready) {
+module::~module() {
+    if (Ready) {
         disconnect(Process, &QProcess::readyReadStandardOutput,
                    this, &module::QProcess_readyReadStandardOutput);
 
-        disconnect(Process, SIGNAL(finished(int,QProcess::ExitStatus)),
-                   this, SLOT(QProcess_finished(int,QProcess::ExitStatus)));
+        disconnect(Process, SIGNAL(finished(int, QProcess::ExitStatus)),
+                   this, SLOT(QProcess_finished(int, QProcess::ExitStatus)));
         Process->kill();
     }
     delete ui;
 }
 
 void module::QProcess_readyReadStandardOutput() {
-    while(Process->bytesAvailable() > 0) {
+    while (Process->bytesAvailable() > 0) {
         QString Line(Process->readLine(100));
         ui->textBrowser->append(Line);
     }

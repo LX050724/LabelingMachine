@@ -7,20 +7,22 @@
 #include "Labels.h"
 
 class BandBox {
-    QGraphicsRectItem* Item = nullptr;
+    QGraphicsRectItem *Item = nullptr;
 public:
     QRect Rect;
     QString Label;
     int ID;
 
-    BandBox()= default;
+    BandBox() = default;
+
     BandBox(int xmin, int ymin, int xmax, int yamx, const QString &label, int id);
-    BandBox(const QRect& rect, const QString &label, int _ID) :
+
+    BandBox(const QRect &rect, const QString &label, int _ID) :
             Rect(rect), Label(label), ID(_ID) {}
 
-    explicit BandBox(QGraphicsRectItem* item, int id = 0, QString  label = QString());
+    explicit BandBox(QGraphicsRectItem *item, int id = 0, QString label = QString());
 
-    inline bool operator ==(const BandBox &comp) const {
+    inline bool operator==(const BandBox &comp) const {
         return (this->Rect == comp.Rect);
     }
 };

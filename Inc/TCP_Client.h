@@ -7,9 +7,9 @@
 #include <QtNetwork/QHostAddress>
 
 class TCP_Client : public QThread {
-    Q_OBJECT
+Q_OBJECT
 
-    QTcpSocket* Socket = nullptr;
+    QTcpSocket *Socket = nullptr;
     QHostAddress Address;
     QByteArray Data;
     QList<QByteArray> TransmitData;
@@ -20,22 +20,27 @@ public:
     inline bool isReady() const { return Ready; }
 
 signals:
-    void ReceiveData(const QByteArray&);
+
+    void ReceiveData(const QByteArray &);
+
     void Disconnected();
 
 public:
-    explicit TCP_Client(QObject* parent = nullptr) : QThread(parent)
-    {   }
+    explicit TCP_Client(QObject *parent = nullptr) : QThread(parent) {}
 
     ~TCP_Client() override;
-    bool Connect(const QHostAddress& address);
+
+    bool Connect(const QHostAddress &address);
+
     void Disconnect();
+
     void Transmit(const QByteArray &_data);
 
 private:
     void run() override;
 
 private slots:
+
     void Socket_disconnected();
 };
 

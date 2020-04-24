@@ -1,20 +1,19 @@
 ﻿#include "imagedata.h"
 
-ImageData::ImageData(const QString& imagepath, const QString& imagefilename, const QString& xmlpath, const QString &xmlfilename):
-    ImagePath(imagepath), ImageFilename(imagefilename), XmlPath(xmlpath), XmlFilename(xmlfilename)
-{
+ImageData::ImageData(const QString &imagepath, const QString &imagefilename, const QString &xmlpath,
+                     const QString &xmlfilename) :
+        ImagePath(imagepath), ImageFilename(imagefilename), XmlPath(xmlpath), XmlFilename(xmlfilename) {
     loadXml();
 }
 
 ImageData::ImageData(const QImage &img, const QVector<BandBox> &bandboxs) :
-    BandBoxs(bandboxs),
-    Img(new QImage(img))
-{
+        BandBoxs(bandboxs),
+        Img(new QImage(img)) {
     has_label = !BandBoxs.isEmpty();
 }
 
-bool ImageData::saveXml(const QString& xmlpath, const QString &xmlfilename) {
-    if(xmlpath.isEmpty() || xmlfilename.isEmpty())
+bool ImageData::saveXml(const QString &xmlpath, const QString &xmlfilename) {
+    if (xmlpath.isEmpty() || xmlfilename.isEmpty())
         return false;
     XmlPath = xmlpath;
     XmlFilename = xmlfilename;
@@ -22,14 +21,14 @@ bool ImageData::saveXml(const QString& xmlpath, const QString &xmlfilename) {
 }
 
 bool ImageData::saveXml() {
-    if(remotemod)
+    if (remotemod)
         return true;
 
-    if(XmlPath.isEmpty())
+    if (XmlPath.isEmpty())
         return false;
 
     QFile File(XmlPath + '/' + XmlFilename);
-    if(!File.open(QFile::WriteOnly | QFile::Text))
+    if (!File.open(QFile::WriteOnly | QFile::Text))
         return false;
 
     QTextStream textStream(&File);
@@ -56,7 +55,7 @@ bool ImageData::saveXml() {
     root.appendChild(sizeElement);
     //sizeElement End
 
-    for(const BandBox& object : BandBoxs) {
+    for (const BandBox &object : BandBoxs) {
         QDomElement objectElement = XmlReader.createElement("object");
 
         QDomElement nameElement = XmlReader.createElement("name");
@@ -101,21 +100,21 @@ bool ImageData::saveXml() {
 }
 
 bool ImageData::loadXml() {
-    if(XmlPath.isEmpty() || XmlFilename.isEmpty())
+    if (XmlPath.isEmpty() || XmlFilename.isEmpty())
         return false;
 
     QFile File(XmlPath + '/' + XmlFilename);
-    if(!File.open(QFile::ReadOnly | QFile::Text))
+    if (!File.open(QFile::ReadOnly | QFile::Text))
         return false;
 
     QDomDocument XmlReader;
-    if(!XmlReader.setContent(&File)) {
+    if (!XmlReader.setContent(&File)) {
         File.close();
         return false;
     }
 
     QDomElement root = XmlReader.documentElement();
-    if(root.nodeName() == "annotation") {
+    if (root.nodeName() == "annotation") {
         ImageFilename = root.firstChildElement("filename").text();
         parsesizeMembers(root.firstChildElement("size"));
         QDomElement object = root.firstChildElement("object");
@@ -123,8 +122,7 @@ bool ImageData::loadXml() {
             parseobjectMembers(object);
             object = object.nextSiblingElement();
         }
-    }
-    else {
+    } else {
         File.close();
         return false;
     }
@@ -135,13 +133,13 @@ bool ImageData::loadXml() {
     return true;
 }
 
-inline void ImageData::parsesizeMembers(const QDomElement& Node) {
+inline void ImageData::parsesizeMembers(const QDomElement &Node) {
     size.setWidth(Node.firstChildElement("width").text().toInt());
     size.setHeight(Node.firstChildElement("height").text().toInt());
 }
 
-void ImageData::parseobjectMembers(const QDomElement& Node) {
-    int xmin,ymin,xmax,ymax;
+void ImageData::parseobjectMembers(const QDomElement &Node) {
+    int xmin, ymin, xmax, ymax;
 
     QString name = Node.firstChildElement("name").text();
     int ID = Node.firstChildElement("ID").text().toInt();
@@ -155,7 +153,7 @@ void ImageData::parseobjectMembers(const QDomElement& Node) {
 }
 
 const QImage ImageData::loadImage() const {
-    if(remotemod)
+    if (remotemod)
         return *Img;
 
     QImage tmp;
@@ -165,7 +163,7 @@ const QImage ImageData::loadImage() const {
 
 void ImageData::removeBandBox(const BandBox &Box) {
     int index = BandBoxs.indexOf(Box);
-    if(index >= 0)
+    if (index >= 0)
         BandBoxs.erase(BandBoxs.begin() + index);
     has_label = (BandBoxs.size() != 0);
 }
