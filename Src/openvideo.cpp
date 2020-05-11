@@ -20,10 +20,9 @@ openvideo::~openvideo() {
 
 void openvideo::on_videotoolButton_clicked() {
 #ifdef linux
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the video"), "/home");
 #else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users",
-                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the video"), "C:/Users");
 #endif
     qInfo() << "videopath:" << dirpath;
     ui->videolineEdit->setText(dirpath);
@@ -31,7 +30,8 @@ void openvideo::on_videotoolButton_clicked() {
 
 void openvideo::on_outtoolButton_clicked() {
 #ifdef linux
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home",
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 #else
     QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users",
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -113,9 +113,7 @@ void VideoFrame::run() {
 
     while (UIclass->video.read(tmp)) {
         if (count % div == 0) {
-            char buffer[10];
-            sprintf_s(buffer, "%05d", count);
-            cv::imwrite(UIclass->JPEGName + buffer + ".jpg", tmp, FLAG);
+            cv::imwrite(UIclass->JPEGName + (char *) QString::number(count).data() + ".jpg", tmp, FLAG);
         }
         ++count;
         UIclass->ui->progressBar->setValue(count * 100 / frame_count);

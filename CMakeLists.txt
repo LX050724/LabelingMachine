@@ -1,11 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(LabelingMachine)
 
 add_subdirectory(modules)
 
 set(CMAKE_CXX_STANDARD 14)
-
-
 
 #Qt自动生成选项
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -32,7 +30,6 @@ if (UNIX)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O1")
     target_link_libraries(LabelingMachine pthread)
     #添加多线程库
-    set(CMAKE_PREFIX_PATH /usr/local/Qt_5.14.0/5.14.0/gcc_64/lib/cmake)
 elseif (WIN32)
     #设置Qt库
     set(CMAKE_PREFIX_PATH D:/Qt/5.14.0/msvc2017_64/lib/cmake)
