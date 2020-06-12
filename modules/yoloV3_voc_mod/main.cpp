@@ -189,7 +189,7 @@ bool FileCopy(const char *Src, const char *Dst) {
         return false;
     }
     len = stat.st_size;
-    fd_out = open(Dst, O_CREAT | O_WRONLY, 0644);
+    fd_out = open(Dst, O_CREAT | O_WRONLY, 0777);
     if (fd_out == -1)
         return false;
 
@@ -211,7 +211,7 @@ bool FileCopy(const char *Src, const char *Dst) {
 bool CreateDir(const char *Path) {
     DIR *tmp = opendir(Path);
     if (tmp) closedir(tmp);
-    else if (mkdir(Path, 0644) < 0)
+    else if (mkdir(Path, 0777) < 0)
         return false;
     return true;
 }

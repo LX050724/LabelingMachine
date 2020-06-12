@@ -113,7 +113,9 @@ void VideoFrame::run() {
 
     while (UIclass->video.read(tmp)) {
         if (count % div == 0) {
-            cv::imwrite(UIclass->JPEGName + (char *) QString::number(count).data() + ".jpg", tmp, FLAG);
+            char buffer[10];
+            sprintf(buffer, "%05d", count);
+            cv::imwrite(UIclass->JPEGName + buffer + ".jpg", tmp, FLAG);
         }
         ++count;
         UIclass->ui->progressBar->setValue(count * 100 / frame_count);
