@@ -1,12 +1,9 @@
-//
-// Created by yao on 2020/3/15.
-//
-
-#ifndef YOLOV3MODULE_ARGRESOLVER_H
-#define YOLOV3MODULE_ARGRESOLVER_H
+#ifndef ARGRESOLVER_H
+#define ARGRESOLVER_H
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 class ArgResolver {
 public:
@@ -17,7 +14,7 @@ public:
     public:
         Arg() = default;
 
-        inline Arg(const std::string &_name, const std::string &_Val) {
+        Arg(const std::string &_name, const std::string &_Val) {
             name = _name;
             Val = _Val;
         }
@@ -38,7 +35,8 @@ public:
 
         inline std::string getStrVal() const { return Val; }
 
-        inline friend std::ostream &operator<<(std::ostream &os, const ArgResolver::Arg &arg) {
+        inline friend std::ostream
+        &operator<<(std::ostream &os, const ArgResolver::Arg &arg) {
             if (arg.isnoname())
                 return os << "No Name Val:" << arg.getStrVal();
             else
@@ -55,9 +53,11 @@ public:
 
     Arg findArg(const std::string &_name);
 
-    const std::string &getSelfname() const;
+    std::string getSelfname() const {
+        return selfname;
+    }
 
     void printAll() const;
 };
 
-#endif //YOLOV3MODULE_ARGRESOLVER_H
+#endif //ARGRESOLVER_H

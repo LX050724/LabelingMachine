@@ -1,12 +1,4 @@
-//
-// Created by yao on 2020/3/15.
-//
-
 #include "ArgResolver.h"
-
-inline const std::string &ArgResolver::getSelfname() const {
-    return selfname;
-}
 
 void ArgResolver::printAll() const {
     std::cout << "selfname:" << selfname << std::endl;

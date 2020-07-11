@@ -70,11 +70,11 @@ RESOURCES += \
 INCLUDEPATH += ./Inc
 
 unix: INCLUDEPATH += /usr/local/include/opencv4/opencv /usr/local/include/opencv4
-win32: INCLUDEPATH += D:/opencv/opencv/vsbuild/install/include D:/opencv/opencv/vsbuild/install/include/opencv2
+win32: INCLUDEPATH += D:/Library/opencv/nmake_build/install/include D:/Library/opencv/nmake_build/install/include/opencv2
 
 CONFIG(debug, debug|release){
 win32: LIBS += \
-    -LD:/opencv/opencv/vsbuild/install/x64/vc16/lib \
+    -LD:/Library/opencv/nmake_build/install/x64/vc16/lib \
     -lopencv_calib3d411d \
     -lopencv_core411d \
     -lopencv_dnn411d \
@@ -92,7 +92,7 @@ win32: LIBS += \
     -lopencv_videoio411d
 } else {
 win32: LIBS += \
-    -LD:/opencv/opencv/vsbuild/install/x64/vc16/lib \
+    -LD:/Library/opencv/nmake_build/install/x64/vc16/lib \
     -lopencv_calib3d411 \
     -lopencv_core411 \
     -lopencv_dnn411 \
