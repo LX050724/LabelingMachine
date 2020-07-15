@@ -1,0 +1,12 @@
+#ifndef LABELINGMACHINE_PUBLICDEFINE_H
+#define LABELINGMACHINE_PUBLICDEFINE_H
+
+#ifdef linux
+#define HOME_PATH "/home"
+#else
+#define HOME_PATH "C:/Users"
+#endif
+
+#define TCP_PORT 8848
+
+#endif //LABELINGMACHINE_PUBLICDEFINE_H

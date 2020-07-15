@@ -17,7 +17,7 @@ if (MSVC)
     set(app_WINRC app_win32.rc)
     set_property(SOURCE app_win32.rc APPEND PROPERTY
             OBJECT_DEPENDS ${PROJECT_SOURCE_DIR}/bitbug_favicon.ico)
-    set(ICON ${app_WINRC})
+    set(ICON ${app_WINRC} Inc/publicdefine.h)
 endif ()
 
 #添加源文件

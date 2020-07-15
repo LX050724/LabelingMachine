@@ -1,5 +1,6 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+#include <Inc/publicdefine.h>
 #include "Inc/module.h"
 #include "ui_module.h"
 #include "labelingmaching.h"
@@ -12,21 +13,12 @@ module::module(QWidget *parent, LabelingMaching *project) :
     QString modulepath;
     QString outputpath;
 
-#ifdef linux
-    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "/home");
-    if(modulepath.isEmpty())
-        return;
-    outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), "/home");
-    if(outputpath.isEmpty())
-        return;
-#else
-    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "C:/Users");
+    modulepath = QFileDialog::getOpenFileName(this, tr("Select module"), "./Mods", "Mod (*.exe)");
     if (modulepath.isEmpty())
         return;
-    outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), "C:/Users");
+    outputpath = QFileDialog::getExistingDirectory(this, tr("Select Output Path"), HOME_PATH);
     if (outputpath.isEmpty())
         return;
-#endif
 
     Ready = true;
     QStringList Arguments;

@@ -1,8 +1,9 @@
-﻿#include "TCP_Client.h"
+﻿#include <Inc/publicdefine.h>
+#include "TCP_Client.h"
 
 void TCP_Client::run() {
     Socket = new QTcpSocket;
-    Socket->connectToHost(Address, 8848);
+    Socket->connectToHost(Address, TCP_PORT);
     if (!Socket->waitForConnected(5000)) {
         qInfo() << "ConnectFailed";
         delete Socket;

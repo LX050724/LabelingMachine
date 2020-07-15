@@ -1,6 +1,7 @@
 #include "TCP_Server.h"
 #include <QHostInfo>
 #include <QNetworkInterface>
+#include <Inc/publicdefine.h>
 
 TCP_Server::TCP_Server(QObject *parent) :
         QTcpServer(parent) {
@@ -44,7 +45,7 @@ TCP_Server::~TCP_Server() {
 }
 
 bool TCP_Server::startListing() {
-    if (!this->listen(QHostAddress::Any, 8848))
+    if (!this->listen(QHostAddress::Any, TCP_PORT))
         return false;
     MachineName = QHostInfo::localHostName();
     qInfo() << "MachineName" << MachineName;

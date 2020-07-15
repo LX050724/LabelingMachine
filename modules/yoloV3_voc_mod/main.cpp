@@ -1,12 +1,27 @@
+#ifdef UNICODE
+#error "Can not use UNICODE！"
+#endif
+
 #include <iostream>
 #include <fstream>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
 #include <tinyxml2.h>
 #include "ArgResolver.h"
 
+#ifdef linux
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+
+#else
+
+#include <windows.h>
+#include <time.h>
+#include <direct.h>
+#include <io.h>
+
+#endif
 using namespace std;
 using namespace tinyxml2;
 
@@ -48,7 +63,7 @@ int main(int argc, char *argv[]) {
     Args.printAll();
     cout.rdbuf(streams);
 
-    XMLDocument ProjectXml;
+    tinyxml2::XMLDocument ProjectXml;
     ProjectXml.LoadFile(ProjectPath.c_str());
 
     XMLElement *root = ProjectXml.FirstChildElement("LablingMachineProject");
@@ -135,7 +150,7 @@ int main(int argc, char *argv[]) {
 }
 
 string ImageProcess(const char *XmlFilename) {
-    XMLDocument ImgXml;
+    tinyxml2::XMLDocument ImgXml;
     ofstream file;
 
     ImgXml.LoadFile((XmlPath + '/' + XmlFilename).c_str());
@@ -176,6 +191,8 @@ string ImageProcess(const char *XmlFilename) {
     return filename;
 }
 
+#ifdef linux
+
 bool FileCopy(const char *Src, const char *Dst) {
     int fd_in, fd_out;
     struct stat stat{};
@@ -215,3 +232,17 @@ bool CreateDir(const char *Path) {
         return false;
     return true;
 }
+
+#else
+
+bool FileCopy(const char *Src, const char *Dst) {
+    return CopyFile(Src, Dst, false);
+}
+
+bool CreateDir(const char *Path) {
+    if (_access(Path, _A_NORMAL) == 0)
+        return true;
+    return _mkdir(Path) == 0;
+}
+
+#endif

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 
 #include <iostream>
+#include <Inc/publicdefine.h>
 
 openvideo::openvideo(QWidget *parent) :
         QDialog(parent),
@@ -19,23 +20,15 @@ openvideo::~openvideo() {
 }
 
 void openvideo::on_videotoolButton_clicked() {
-#ifdef linux
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the video"), "/home");
-#else
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the video"), "C:/Users");
-#endif
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the video"), HOME_PATH);
+
     qInfo() << "videopath:" << dirpath;
     ui->videolineEdit->setText(dirpath);
 }
 
 void openvideo::on_outtoolButton_clicked() {
-#ifdef linux
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "/home",
+    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), HOME_PATH,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-#else
-    QString dirpath = QFileDialog::getExistingDirectory(this, tr("Select the directory"), "C:/Users",
-                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-#endif
     qInfo() << "outpath:" << dirpath;
     ui->outlineEdit->setText(dirpath);
 }

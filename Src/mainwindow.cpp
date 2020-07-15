@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <Inc/module.h>
+#include <Inc/publicdefine.h>
 
 #include "openvideo.h"
 #include "helpwindow.h"
@@ -143,11 +144,7 @@ void MainWindow::on_openVideo_triggered() {
 }
 
 void MainWindow::on_open_triggered() {
-#ifdef linux
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), "/home");
-#else
-    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), "C:/Users");
-#endif
+    QString dirpath = QFileDialog::getOpenFileName(this, tr("Select the Project"), HOME_PATH, "Project (Project.xml)");
     if (!dirpath.isEmpty()) {
         Project.setProjectPath(dirpath);
         if (!Project.load()) {
@@ -166,16 +163,14 @@ void MainWindow::on_open_triggered() {
         ui->creat->setDisabled(true);
         ui->ClientModeAction->setDisabled(true);
         ui->Program_Conversion->setEnabled(true);
+        ui->actionChange_XmlPath_and_ImgPath->setEnabled(true);
     }
 }
 
 void MainWindow::on_creat_triggered() {
-#ifdef linux
-    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-#else
-    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), "C:/Users",
+    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the gallery folder"), HOME_PATH,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-#endif
+
     if (Imgpath.isEmpty()) {
         QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
         return;
@@ -367,4 +362,31 @@ void MainWindow::on_Program_Conversion_triggered() {
     if (m.isReady()) {
         m.exec();
     }
+}
+
+void MainWindow::on_actionChange_XmlPath_and_ImgPath_triggered() {
+
+    QString Imgpath = QFileDialog::getExistingDirectory(this, tr("Select the Img folder"), HOME_PATH,
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (Imgpath.isEmpty()) {
+        QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
+        return;
+    }
+
+    QString XmlPath = QFileDialog::getExistingDirectory(this, tr("Select the Xml folder"), Imgpath,
+                                                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (XmlPath.isEmpty()) {
+        QMessageBox::warning(this, tr("Have no choice"), tr("Path is empty"));
+        return;
+    }
+
+    Project.setImgPath(Imgpath);
+    Project.setXmlPath(XmlPath);
+    for (ImageData &i : Project.Images) {
+        i.setXmlPath(XmlPath);
+        i.setImagePath(Imgpath);
+    }
+    Project.save();
 }

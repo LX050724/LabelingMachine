@@ -13,7 +13,6 @@
 #include "TCP_Server.h"
 #include "ClientUI.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -68,6 +67,8 @@ private slots:
     void on_HostModeAction_triggered();
 
     void on_Program_Conversion_triggered();
+
+    void on_actionChange_XmlPath_and_ImgPath_triggered();
 
 private:
     enum {

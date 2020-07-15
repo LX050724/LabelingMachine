@@ -714,57 +714,57 @@ p, li { white-space: pre-wrap; }
         <translation>LabelMachine</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="58"/>
+        <location filename="Src/mainwindow.ui" line="57"/>
         <source>All</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="63"/>
+        <location filename="Src/mainwindow.ui" line="62"/>
         <source>Labeled</source>
         <translation>已标记</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="68"/>
+        <location filename="Src/mainwindow.ui" line="67"/>
         <source>Unlabeled</source>
         <translation>未标记</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="134"/>
+        <location filename="Src/mainwindow.ui" line="133"/>
         <source>Class list:</source>
         <translation>类列表:</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="159"/>
+        <location filename="Src/mainwindow.ui" line="158"/>
         <source>Edit class list</source>
         <translation>编辑类列表</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="211"/>
+        <location filename="Src/mainwindow.ui" line="210"/>
         <source>ID</source>
         <translation>ID</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="216"/>
+        <location filename="Src/mainwindow.ui" line="215"/>
         <source>Class</source>
         <translation>Class</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="244"/>
+        <location filename="Src/mainwindow.ui" line="243"/>
         <source>Last picture</source>
         <translation>上一张</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="263"/>
+        <location filename="Src/mainwindow.ui" line="262"/>
         <source>Next picture</source>
         <translation>下一张</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="294"/>
+        <location filename="Src/mainwindow.ui" line="293"/>
         <source>TAB list:</source>
         <translation>标签列表:</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="376"/>
+        <location filename="Src/mainwindow.ui" line="375"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -826,12 +826,17 @@ p, li { white-space: pre-wrap; }
         <translation>客户端模式</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="347"/>
+        <location filename="Src/mainwindow.ui" line="476"/>
+        <source>Change XmlPath and ImgPath</source>
+        <translation>改变图片集和标签集路径</translation>
+    </message>
+    <message>
+        <location filename="Src/mainwindow.ui" line="346"/>
         <source>Lable</source>
         <translation>标签</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.ui" line="352"/>
+        <location filename="Src/mainwindow.ui" line="351"/>
         <source>Locate</source>
         <translation>位置</translation>
     </message>
@@ -856,73 +861,85 @@ p, li { white-space: pre-wrap; }
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="147"/>
-        <location filename="Src/mainwindow.cpp" line="149"/>
+        <location filename="Src/mainwindow.cpp" line="146"/>
         <source>Select the Project</source>
         <translation>选择工程</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="154"/>
-        <location filename="Src/mainwindow.cpp" line="196"/>
-        <location filename="Src/mainwindow.cpp" line="207"/>
-        <location filename="Src/mainwindow.cpp" line="225"/>
-        <location filename="Src/mainwindow.cpp" line="354"/>
+        <location filename="Src/mainwindow.cpp" line="151"/>
+        <location filename="Src/mainwindow.cpp" line="191"/>
+        <location filename="Src/mainwindow.cpp" line="202"/>
+        <location filename="Src/mainwindow.cpp" line="220"/>
+        <location filename="Src/mainwindow.cpp" line="349"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="155"/>
-        <location filename="Src/mainwindow.cpp" line="208"/>
+        <location filename="Src/mainwindow.cpp" line="152"/>
+        <location filename="Src/mainwindow.cpp" line="203"/>
         <source>File opening failed, confirm whether it is a LabelingMachine project file</source>
         <translation>文件打开失败，请确认是否是LabelingMachine工程文件</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="174"/>
-        <location filename="Src/mainwindow.cpp" line="176"/>
+        <location filename="Src/mainwindow.cpp" line="171"/>
         <source>Select the gallery folder</source>
         <translation>选择图片集文件夹</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="180"/>
-        <location filename="Src/mainwindow.cpp" line="187"/>
+        <location filename="Src/mainwindow.cpp" line="175"/>
+        <location filename="Src/mainwindow.cpp" line="182"/>
+        <location filename="Src/mainwindow.cpp" line="373"/>
+        <location filename="Src/mainwindow.cpp" line="381"/>
         <source>Have no choice</source>
         <translation>没有选择</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="180"/>
-        <location filename="Src/mainwindow.cpp" line="187"/>
+        <location filename="Src/mainwindow.cpp" line="175"/>
+        <location filename="Src/mainwindow.cpp" line="182"/>
+        <location filename="Src/mainwindow.cpp" line="373"/>
+        <location filename="Src/mainwindow.cpp" line="381"/>
         <source>Path is empty</source>
         <translation>路径为空</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="184"/>
+        <location filename="Src/mainwindow.cpp" line="179"/>
         <source>Select an XML folder</source>
-        <translation>选择一个XML文件夹</translation>
+        <translation>选择XML文件夹</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="196"/>
+        <location filename="Src/mainwindow.cpp" line="191"/>
         <source>The Project folder creation failed</source>
         <translation>Project文件夹创建失败</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="202"/>
+        <location filename="Src/mainwindow.cpp" line="197"/>
         <source>found Project.xml</source>
         <translation>发现Project.xml</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="203"/>
+        <location filename="Src/mainwindow.cpp" line="198"/>
         <source>Discover project.xml, whether to load the tag and regenerate the list of images</source>
-        <translation>发现旧工程。是否加载标记并重新生成图像列表</translation>
+        <translation>发现旧工程。是否加载标签并重新生成图片列表</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="225"/>
+        <location filename="Src/mainwindow.cpp" line="220"/>
         <source>No files</source>
         <translation>没有文件</translation>
     </message>
     <message>
-        <location filename="Src/mainwindow.cpp" line="354"/>
+        <location filename="Src/mainwindow.cpp" line="349"/>
         <source>TCP startup failure</source>
         <translation>TCP启动失败</translation>
+    </message>
+    <message>
+        <location filename="Src/mainwindow.cpp" line="369"/>
+        <source>Select the Img folder</source>
+        <translation>选择图片集文件夹</translation>
+    </message>
+    <message>
+        <location filename="Src/mainwindow.cpp" line="377"/>
+        <source>Select the Xml folder</source>
+        <translation>选择XML文件夹</translation>
     </message>
 </context>
 <context>
@@ -1026,24 +1043,22 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="Src/module.cpp" line="16"/>
-        <location filename="Src/module.cpp" line="23"/>
         <source>Select module</source>
         <oldsource>选择module</oldsource>
         <translation>选择模块</translation>
     </message>
     <message>
         <location filename="Src/module.cpp" line="19"/>
-        <location filename="Src/module.cpp" line="26"/>
         <source>Select Output Path</source>
         <translation>选择输出文件夹</translation>
     </message>
     <message>
-        <location filename="Src/module.cpp" line="46"/>
+        <location filename="Src/module.cpp" line="38"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="Src/module.cpp" line="46"/>
+        <location filename="Src/module.cpp" line="38"/>
         <source>Create Process failed</source>
         <translation>创建进程失败</translation>
     </message>
@@ -1082,64 +1097,62 @@ p, li { white-space: pre-wrap; }
         <translation>...</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="33"/>
-        <location filename="Src/openvideo.cpp" line="36"/>
+        <location filename="Src/openvideo.cpp" line="30"/>
         <source>Select the directory</source>
         <translation>选择文件夹</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="46"/>
+        <location filename="Src/openvideo.cpp" line="39"/>
         <source>Select the file</source>
         <translation>选择文件</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="46"/>
+        <location filename="Src/openvideo.cpp" line="39"/>
         <source>Path incomplete</source>
         <translation>路径不完整</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="73"/>
+        <location filename="Src/openvideo.cpp" line="66"/>
         <source>confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="74"/>
+        <location filename="Src/openvideo.cpp" line="67"/>
         <source>There are</source>
         <translation>视频共</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="76"/>
+        <location filename="Src/openvideo.cpp" line="69"/>
         <source>frames</source>
         <translation>帧</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="75"/>
+        <location filename="Src/openvideo.cpp" line="68"/>
         <source>frames of video,Extraction of</source>
         <translation>帧,抽取</translation>
     </message>
     <message>
         <location filename="Src/openvideo.cpp" line="23"/>
-        <location filename="Src/openvideo.cpp" line="25"/>
         <source>Select the video</source>
         <translation>选择视频文件</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="81"/>
+        <location filename="Src/openvideo.cpp" line="74"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="81"/>
+        <location filename="Src/openvideo.cpp" line="74"/>
         <source>File opening failed</source>
         <translation>文件打开失败</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="93"/>
+        <location filename="Src/openvideo.cpp" line="86"/>
         <source>complete</source>
         <translation>完成</translation>
     </message>
     <message>
-        <location filename="Src/openvideo.cpp" line="93"/>
+        <location filename="Src/openvideo.cpp" line="86"/>
         <source>Video decomposition completed</source>
         <translation>视频分解完成</translation>
     </message>

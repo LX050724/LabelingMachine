@@ -77,6 +77,14 @@ public:
 
     inline void setRemotemod(bool b) { remotemod = b; }
 
+    inline void setImagePath(const QString &imagePath) { ImagePath = imagePath; }
+
+    inline void setXmlPath(const QString &xmlPath) {
+        XmlPath = xmlPath;
+        BandBoxs.clear();
+        loadXml();
+    }
+
 protected:
     bool loadXml();
 
