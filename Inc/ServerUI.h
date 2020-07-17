@@ -19,12 +19,11 @@ Q_OBJECT
 
     MainWindow *pMainWindow = nullptr;
     TCP_Server *Server = nullptr;
-    int ClientConut = 0;
+    QVector<QHostAddress> clientVector;
     volatile bool Ready = false;
     volatile bool Failed = false;
 
     QVector<QVector<QString>> TaskList;
-    QList<QHostAddress> ClientList;
 
 public:
     explicit ServerUI(QWidget *parent = nullptr, MainWindow *pmainwindow = nullptr);
@@ -56,17 +55,17 @@ private:
 
     void allocation(const QVector<ImageData> &Img);
 
-    void SendSingle_Ready(const QHostAddress &Address);
+    void SendSingle_Ready(SocketThread *Socket);
 
-    void Send_Labels(const QHostAddress &Address);
+    void Send_Labels(SocketThread *Socket);
 
-    void Send_Image(const QHostAddress &Address, const QString &name);
+    void Send_Image(SocketThread *Socket, const QString &name);
 
-    void Send_Image_List(const QHostAddress &Address);
+    void Send_Image_List(SocketThread *Socket);
 
-    void Send_Image_BandBoxs(const QHostAddress &Address, const QString &name);
+    void Send_Image_BandBoxs(SocketThread *Socket, const QString &name);
 
-    void Send_Image_HasLabel(const QHostAddress &Address);
+    void Send_Image_HasLabel(SocketThread *Socket);
 
     const QString Receive_Image_BandBox(const QByteArray &array);
 
@@ -80,9 +79,9 @@ private:
 
 private slots:
 
-    void Sever_ReceiveComplete(const QByteArray &arrary, const QHostAddress &Address);
+    void Sever_ReceiveComplete(const QByteArray &arrary, SocketThread *Socket);
 
-    void Sever_TCPNewConnection(const QHostAddress &Address);
+    void Sever_TCPNewConnection(SocketThread *Socket);
 
     void Sever_TCPDisconnected(const QHostAddress &Address);
 

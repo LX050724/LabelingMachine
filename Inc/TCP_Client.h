@@ -9,7 +9,6 @@
 class TCP_Client : public QThread {
 Q_OBJECT
 
-    QTcpSocket *Socket = nullptr;
     QHostAddress Address;
     QByteArray Data;
     QList<QByteArray> TransmitData;

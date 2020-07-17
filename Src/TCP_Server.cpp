@@ -1,6 +1,6 @@
 #include "TCP_Server.h"
 #include <QHostInfo>
-#include <QNetworkInterface>
+#include <QtWidgets/QMessageBox>
 #include <Inc/publicdefine.h>
 
 TCP_Server::TCP_Server(QObject *parent) :
@@ -18,21 +18,21 @@ void TCP_Server::incomingConnection(qintptr handle) {
                      Qt::QueuedConnection);
     thread->start();
     while (!thread->isReady());
-    ClientList.insertMulti(thread->getPeerAddress(), thread);
+    ClientList.push_back(thread);
     qInfo() << "connected" << ClientList.size() << "Deivce(s)";
-    emit TCPNewConnection(thread->getPeerAddress());
+    emit TCPNewConnection(thread);
 }
 
 void TCP_Server::disconnectedrelay(SocketThread *Link) {
     QHostAddress IP = Link->getPeerAddress();
-    qInfo() << "disconnectedrelay IP =" << IP.toString();
+    qInfo() << "disconnectedrelay IP = " << IP.toString();
 
     QObject::disconnect(Link, &SocketThread::ReceiveData,
                         this, &TCP_Server::relay);
     QObject::disconnect(Link, &SocketThread::Disconnected,
                         this, &TCP_Server::disconnectedrelay);
 
-    ClientList.remove(Link->getPeerAddress());
+    ClientList.removeOne(Link);
 
     delete Link;
     qInfo() << "connected" << ClientList.size() << "Deivce(s)";
@@ -40,8 +40,13 @@ void TCP_Server::disconnectedrelay(SocketThread *Link) {
 }
 
 TCP_Server::~TCP_Server() {
-    for (SocketThread *i : ClientList)
+    for (SocketThread *i : ClientList) {
+        QObject::disconnect(i, &SocketThread::ReceiveData,
+                            this, &TCP_Server::relay);
+        QObject::disconnect(i, &SocketThread::Disconnected,
+                            this, &TCP_Server::disconnectedrelay);
         delete i;
+    }
 }
 
 bool TCP_Server::startListing() {
@@ -52,35 +57,8 @@ bool TCP_Server::startListing() {
     return true;
 }
 
-void TCP_Server::relay(const QByteArray Data, const QHostAddress &Address) {
-    emit ReceiveComplete(Data, Address);
-}
-
-const QList<QHostAddress> TCP_Server::getClientAddressList() {
-    QList<QHostAddress> tmp;
-    for (myQHostAddress i : ClientList.keys())
-        tmp.push_back(QHostAddress(i));
-    return tmp;
-}
-
-bool TCP_Server::myQHostAddress::operator>(const TCP_Server::myQHostAddress &a) const {
-    return this->toIPv4Address() > a.toIPv4Address();
-}
-
-bool TCP_Server::myQHostAddress::operator<(const TCP_Server::myQHostAddress &a) const {
-    return this->toIPv4Address() < a.toIPv4Address();
-}
-
-bool TCP_Server::myQHostAddress::operator>=(const TCP_Server::myQHostAddress &a) const {
-    return this->toIPv4Address() >= a.toIPv4Address();
-}
-
-bool TCP_Server::myQHostAddress::operator<=(const TCP_Server::myQHostAddress &a) const {
-    return this->toIPv4Address() <= a.toIPv4Address();
-}
-
-void SocketThread::Scoket_disconnected() {
-    emit Disconnected(this);
+void TCP_Server::relay(const QByteArray Data, SocketThread *Socket) {
+    emit ReceiveComplete(Data, Socket);
 }
 
 void SocketThread::run() {
@@ -88,7 +66,8 @@ void SocketThread::run() {
     Socket->setSocketDescriptor(handle);
     peerAddress = Socket->peerAddress();
     peerName = Socket->peerName();
-    QObject::connect(Socket, SIGNAL(disconnected()), this, SLOT(Scoket_disconnected()));
+    QObject::connect(Socket, SIGNAL(disconnected()), this, SLOT(Scoket_disconnected()),
+                     Qt::QueuedConnection);
     qInfo() << "SocketThreadID:" << SocketThread::currentThreadId();
     qInfo() << "peerAddress:" << peerAddress;
     qInfo() << "peerName:" << peerName;
@@ -103,7 +82,12 @@ void SocketThread::run() {
                     throw Socket;
                 TransmitData.pop_front();
             }
-            if (STOP) return;
+            if (STOP) {
+                QObject::disconnect(Socket, SIGNAL(disconnected()),
+                                    this, SLOT(Scoket_disconnected()));
+                delete Socket;
+                return;
+            }
         }
 
         Data = Socket->readAll();
@@ -119,8 +103,12 @@ void SocketThread::run() {
                 Data.push_back(Socket->readAll());
             else break;
         }
-        emit ReceiveData(Data, peerAddress);
+        emit ReceiveData(Data, this);
     }
+}
+
+void SocketThread::Scoket_disconnected() {
+    emit Disconnected(this);
 }
 
 SocketThread::SocketThread(QObject *parent, qintptr _handle) :
@@ -136,11 +124,6 @@ SocketThread::~SocketThread() {
         this->quit();
         STOP = true;
         this->wait();
-    }
-    if (Socket) {
-        QObject::disconnect(Socket, SIGNAL(disconnected()),
-                            this, SLOT(Scoket_disconnected()));
-        delete Socket;
     }
 }
 

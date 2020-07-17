@@ -231,8 +231,7 @@ void ClientUI::Receive_Image_List(const QByteArray &array) {
     for (int i = 0; i < imgCount; ++i) {
         const char *p = DataCopy.constData();
         int len = ToInt(p, 0);
-        ImageList.insertMulti(DataCopy.mid(sizeof(int), len), false);
-        //imglist.push_back(QString(DataCopy.mid(sizeof(int), len)));
+        ImageList.insert(DataCopy.mid(sizeof(int), len), false);
         DataCopy.remove(0, len + sizeof(int));
     }
     pMainWindow->ui->imgs_listWidget->clear();
@@ -279,8 +278,10 @@ void ClientUI::Proxy_nextimg() {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 Send_IRP(Flag_Image_IRP, filename_now);
-            } else
+            } else {
+                loadcomplete = true;
                 qInfo() << "next Item is null";
+            }
         }
     } else
         qInfo("Busy");
@@ -298,8 +299,10 @@ void ClientUI::Proxy_lastimg() {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 Send_IRP(Flag_Image_IRP, filename_now);
-            } else
+            } else {
+                loadcomplete = true;
                 qInfo() << "next Item is null";
+            }
         }
     } else
         qInfo("Busy");

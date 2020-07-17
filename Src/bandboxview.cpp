@@ -1,7 +1,4 @@
 ﻿#include "bandboxview.h"
-#include <QGraphicsTextItem>
-#include <QRect>
-#include <QPen>
 #include <math.h>
 
 void BandBoxView::mouseMoveEvent(QMouseEvent *event) {
@@ -160,9 +157,9 @@ void BandBoxView::wheelEvent(QWheelEvent *event) {
     if (scene_ == nullptr)
         return;
 
-    QPoint mousePoint = mapToScene(event->pos()).toPoint();
+    QPoint mousePoint = mapToScene(event->position().toPoint()).toPoint();
     double scale = Pixmap->scale();
-    if (event->delta() > 0) {
+    if (event->angleDelta().y() > 0) {
         if (scale > 4.9)
             return;
         scale *= 1.1;

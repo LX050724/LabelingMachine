@@ -24,7 +24,7 @@ protected:
     volatile bool has_label = false;
 protected:
     QVector<BandBox> BandBoxs;
-    QImage *Img = nullptr;
+    QImage Img;
 
 public:
     ImageData() = default;

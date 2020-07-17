@@ -45,7 +45,7 @@ ServerUI::~ServerUI() {
     delete ui;
 }
 
-void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress &Address) {
+void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, SocketThread *Socket) {
     if (Data.isEmpty()) {
         qWarning() << "Bad Data";
         Log_println(tr("Transmission error. Please try again"));
@@ -61,60 +61,65 @@ void ServerUI::Sever_ReceiveComplete(const QByteArray &Data, const QHostAddress 
     }
     switch (flag) {
         case Flag_Label_IRP: {
-            Send_Labels(Address);
-            Log_printf("A get label request from %s was received\n",
-                       QHostAddress2c_str(Address));
+            Send_Labels(Socket);
+            Log_println("A get label request from " + Socket->getPeerAddress().toString() + " was received");
+//                       QHostAddress2c_str(Socket->getPeerAddress()));
             break;
         }
         case Flag_Image_IRP: {
             int len = ToInt(pData, 2);
             QString name(Data.mid(sizeof(int) * 3, len));
-            Send_Image(Address, name);
-            Log_printf("Received a request from %s to get a picture %s\n",
-                       QHostAddress2c_str(Address), name.toStdString().c_str());
+            Send_Image(Socket, name);
+            Log_println("Received a request from " + Socket->getPeerAddress().toString() + " to get a picture " + name);
             break;
         }
         case Flag_Image_BandBoxs_IRP: {
             int len = ToInt(pData, 2);
             QString name(Data.mid(sizeof(int) * 3, len));
-            Send_Image_BandBoxs(Address, name);
-            Log_printf("Received a Bandbox request from %s to get %s\n",
-                       QHostAddress2c_str(Address), name.toStdString().c_str());
+            Send_Image_BandBoxs(Socket, name);
+            Log_println("Received a Bandbox request from " + Socket->getPeerAddress().toString() + " to get " + name);
             break;
         }
         case Flag_Image_List_IRP: {
-            Send_Image_List(Address);
-            Log_printf("Received a request for a list of images from %s\n",
-                       QHostAddress2c_str(Address));
+            Send_Image_List(Socket);
+            Log_println("Received a request for a list of images from " + Socket->getPeerAddress().toString());
             break;
         }
         case Flag_Image_BandBoxs_FB: {
             QString filename = Receive_Image_BandBox(Data);
-            Log_printf("Received %s BandBox, saved\n",
-                       filename.data());
+            Log_println("Received " + filename + " BandBox, saved");
             break;
         }
     }
 }
 
 void ServerUI::on_pushButton_clicked() {
-    if ((ClientConut = Server->getCilentConut()) == 0) {
+    QList<SocketThread *> ClientSocketList = Server->getClientSocketList();
+
+    for (SocketThread *ClientSocket : ClientSocketList) {
+        if (clientVector.indexOf(ClientSocket->getPeerAddress()) == -1)
+            clientVector.push_back(ClientSocket->getPeerAddress());
+    }
+
+    qDebug() << clientVector;
+
+    if (clientVector.size() == 0) {
         QMessageBox::warning(this, tr("error"), tr("No client connection"));
         return;
     }
 
     ui->pushButton->setDisabled(true);
-    ClientList = Server->getClientAddressList();
 
-    Log_printf("Stopped accessing,%d is accessed\nAssign tasks...\n", ClientConut);
+    Log_printf("Stopped accessing,%d is accessed\nAssign tasks...\n", clientVector.size());
     allocation(pMainWindow->Project.no_label_Img());
 
     Log_printf("Assigned to complete\nThe total number of %d\n", pMainWindow->Project.all_Img().size());
     Log_printf("Server:%d\n", TaskList.front().size());
-    for (int i = 0; i < ClientList.size(); ++i) {
-        Log_printf("%s:%d\n", ClientList[i].toString().toStdString().c_str(),
-                   TaskList[i + 1].size());
-        SendSingle_Ready(ClientList[i]);
+    for (int i = 0; i < Server->getClientSocketList().size(); ++i) {
+        SocketThread *socketThread = Server->getClientSocketList()[i];
+        int index = clientVector.indexOf(socketThread->getPeerAddress());
+        Log_println(socketThread->getPeerAddress().toString() + ':' + QString::number(TaskList[index + 1].size()));
+        SendSingle_Ready(socketThread);
     }
 
     disconnect(pMainWindow->ui->comboBox, SIGNAL(currentIndexChanged(int)),
@@ -124,34 +129,47 @@ void ServerUI::on_pushButton_clicked() {
             this, SLOT(Proxy_comboBox_currentIndexChanged(int)));
 }
 
-void ServerUI::Sever_TCPNewConnection(const QHostAddress &Address) {
-    QList<QString> Addresslist;
-    if (ClientConut > 0) {
-        if (ClientList.indexOf(Address) >= 0) {
-            Log_printf("%s To access\n", ToCharp(Address.toString().toLocal8Bit()));
+void ServerUI::Sever_TCPNewConnection(SocketThread *Socket) {
+    int count = 0;
+    for (SocketThread *ClientSocket : Server->getClientSocketList()) {
+        if (ClientSocket->getPeerAddress() == Socket->getPeerAddress()) {
+            count++;
+        }
+    }
+    /* 发现此IP的链接大于1，断开此链接 */
+    if (count > 1) {
+        Server->disconnectedrelay(Socket);
+        return;
+    }
+    /* 如果已注册的客户端IP非空，检查新的链接是不是已注册 */
+    if (!clientVector.empty()) {
+        if (clientVector.indexOf(Socket->getPeerAddress()) >= 0) {
+            /* 是已注册的IP，发生开始信号 */
+            Log_println(Socket->getPeerAddress().toString() + " To access");
             Log_println("Start signal");
-            SendSingle_Ready(Address);
+            SendSingle_Ready(Socket);
         } else return;
     } else {
-        Log_printf("%s access\n", ToCharp(Address.toString().toLocal8Bit()));
+        /* 没有已注册的IP，说明未开始，链接待命 */
+        Log_println(Socket->getPeerAddress().toString() + " access");
+        QStringList Addresslist;
+        for (const SocketThread *i : Server->getClientSocketList())
+            Addresslist.push_back(i->getPeerAddress().toString() + ' ' + i->getpeerName());
+        ui->listWidget->clear();
+        ui->listWidget->addItems(Addresslist);
+        ui->listWidget->sortItems();
     }
-    for (const QHostAddress &i : Server->getClientAddressList())
-        Addresslist.push_back(i.toString());
-    ui->listWidget->clear();
-    ui->listWidget->addItems(Addresslist);
-    ui->listWidget->sortItems();
 }
 
 void ServerUI::Sever_TCPDisconnected(const QHostAddress &Address) {
-    if (ClientConut >= 0 && ClientList.indexOf(Address) == -1)
-        return;
+    /* 刷新链接列表 */
     QList<QString> Addresslist;
-    for (const QHostAddress &i : Server->getClientAddressList())
-        Addresslist.push_back(i.toString());
+    for (const SocketThread *i : Server->getClientSocketList())
+        Addresslist.push_back(i->getPeerAddress().toString() + ' ' + i->getpeerName());
     ui->listWidget->clear();
     ui->listWidget->addItems(Addresslist);
     ui->listWidget->sortItems();
-    Log_printf("%sdisconnect\n", Address.toString().toStdString().c_str());
+    Log_println(Address.toString() + " disconnect");
 }
 
 void ServerUI::Sever_acceptError(QAbstractSocket::SocketError socketError) {
@@ -211,29 +229,29 @@ inline void ServerUI::Log_putc(char c) {
 }
 
 void ServerUI::allocation(const QVector<ImageData> &Img) {
-    int div = Img.size() / (ClientConut + 1);
+    int div = Img.size() / (clientVector.size() + 1);
     QVector<QString> Task;
-    for (int n = 0; n < ClientConut; ++n) {
+    for (int n = 0; n < clientVector.size(); ++n) {
         for (int i = 0; i < div; ++i) {
             Task.push_back(Img[div * n + i].getImageFilename());
         }
         TaskList.push_back(Task);
         Task.clear();
     }
-    for (int i = div * ClientConut; i < Img.size(); ++i) {
+    for (int i = div * clientVector.size(); i < Img.size(); ++i) {
         Task.push_back(Img[i].getImageFilename());
     }
     TaskList.push_back(Task);
     Proxy_comboBox_currentIndexChanged(all);
 }
 
-void ServerUI::SendSingle_Ready(const QHostAddress &Address) {
+void ServerUI::SendSingle_Ready(SocketThread *Socket) {
     /*int 0x04, int 0x01 */
     int buff[] = {sizeof(int), Flag_Ready};
-    Server->SendTo(Address, QByteArray(ToCharp(buff), sizeof(buff)));
+    Socket->Transmit(QByteArray(ToCharp(buff), sizeof(buff)));
 }
 
-void ServerUI::Send_Labels(const QHostAddress &Address) {
+void ServerUI::Send_Labels(SocketThread *Socket) {
     /*int size, int flag = Flag_Label_IRP, int count, <int len, char[len] label> * count */
     QVector<QString> labels = pMainWindow->Project.labels.getLabels();
     int count = labels.size();
@@ -248,10 +266,10 @@ void ServerUI::Send_Labels(const QHostAddress &Address) {
     data.push_front(QByteArray(ToCharp(&flag), sizeof(int)));
     int size = data.size();
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    Server->SendTo(Address, data);
+    Socket->Transmit(data);
 }
 
-void ServerUI::Send_Image(const QHostAddress &Address, const QString &name) {
+void ServerUI::Send_Image(SocketThread *Socket, const QString &name) {
     /*int size, int flag = Flag_Image_IRP, int ImageSize, char[ImageSize] imgRAW*/
     int Index = pMainWindow->Project.findImage(name);
     QString ImagePath = pMainWindow->Project.all_Img()[Index].getImagePath();
@@ -271,12 +289,13 @@ void ServerUI::Send_Image(const QHostAddress &Address, const QString &name) {
     int size = data.size();
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
     qDebug() << size << head[1];
-    Server->SendTo(Address, data);
+    Socket->Transmit(data);
 }
 
-void ServerUI::Send_Image_List(const QHostAddress &Address) {
+void ServerUI::Send_Image_List(SocketThread *Socket) {
     /*int size, int imgCount, <int len, char[len] filename> * imgCount */
-    QVector<QString> imgs = TaskList[ClientList.indexOf(Address) + 1];
+    int index = clientVector.indexOf(Socket->getPeerAddress());
+    QVector<QString> imgs = TaskList[index + 1];
     int imgCount = imgs.size();
     QByteArray data(ToCharp(&imgCount), sizeof(int));
 
@@ -290,12 +309,11 @@ void ServerUI::Send_Image_List(const QHostAddress &Address) {
     data.push_front(QByteArray(ToCharp(&flag), sizeof(int)));
     int size = data.size();
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    Server->SendTo(Address, data);
-
-    Send_Image_HasLabel(Address);
+    Socket->Transmit(data);
+    Send_Image_HasLabel(Socket);
 }
 
-void ServerUI::Send_Image_BandBoxs(const QHostAddress &Address, const QString &name) {
+void ServerUI::Send_Image_BandBoxs(SocketThread *Socket, const QString &name) {
     /*int size, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
     int Index = pMainWindow->Project.findImage(name);
     QVector<BandBox> BandBoxs = pMainWindow->Project.all_Img()[Index].getBandBoxs();
@@ -315,7 +333,7 @@ void ServerUI::Send_Image_BandBoxs(const QHostAddress &Address, const QString &n
     data.push_front(QByteArray(ToCharp(&flag), sizeof(int)));
     int size = data.size();
     data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    Server->SendTo(Address, data);
+    Socket->Transmit(data);
 }
 
 const QString ServerUI::Receive_Image_BandBox(const QByteArray &array) {
@@ -353,14 +371,14 @@ const QString ServerUI::Receive_Image_BandBox(const QByteArray &array) {
 }
 
 const char *ServerUI::QHostAddress2c_str(const QHostAddress &Address) {
-    return Address.toString().toUtf8().data();
+    return Address.toString().toLocal8Bit().data();
 }
 
-void ServerUI::Send_Image_HasLabel(const QHostAddress &Address) {
+void ServerUI::Send_Image_HasLabel(SocketThread *Socket) {
     /*int size, int flag = Flag_Image_haslabel, int len, char[len] haslabel*/
-    if (!ClientList.isEmpty()) {
-        int Index = ClientList.indexOf(Address);
-        QVector<QString> imagelist = TaskList[Index + 1];
+    if (!Server->getClientSocketList().isEmpty()) {
+        int index = clientVector.indexOf(Socket->getPeerAddress());
+        QVector<QString> imagelist = TaskList[index + 1];
         QByteArray data;
         int head[] = {Flag_Image_haslabel, imagelist.size()};
         data.push_back(QByteArray(ToCharp(&head), sizeof(head)));
@@ -371,6 +389,6 @@ void ServerUI::Send_Image_HasLabel(const QHostAddress &Address) {
         }
         int size = data.size();
         data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-        Server->SendTo(Address, data);
+        Socket->Transmit(data);
     }
 }

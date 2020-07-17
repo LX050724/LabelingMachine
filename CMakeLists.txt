@@ -33,28 +33,29 @@ add_executable(LabelingMachine ${SOURCES} ${ICON})
 target_include_directories(LabelingMachine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
         ${CMAKE_CURRENT_BINARY_DIR}/LabelingMachine_autogen/include)
 
-
-# Remove the console of gui program
-if (WIN32)
-    if (MSVC)
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    # Remove the console of gui program
+    if (WIN32)
+        if (MSVC)
+            set_target_properties(${PROJECT_NAME} PROPERTIES
+                    WIN32_EXECUTABLE YES
+                    LINK_FLAGS "/ENTRY:mainCRTStartup"
+                    )
+        elseif (CMAKE_COMPILER_IS_GNUCXX)
+            # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
+        else ()
+            message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
+        endif (MSVC)
+    elseif (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES
-                WIN32_EXECUTABLE YES
-                LINK_FLAGS "/ENTRY:mainCRTStartup"
+                MACOSX_BUNDLE YES
                 )
-    elseif (CMAKE_COMPILER_IS_GNUCXX)
-        # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows") # Not tested
+    elseif (UNIX)
+        # Nothing special required
     else ()
-        message(SEND_ERROR "You are using an unsupported Windows compiler! (Not MSVC or GCC)")
-    endif (MSVC)
-elseif (APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-            MACOSX_BUNDLE YES
-            )
-elseif (UNIX)
-    # Nothing special required
-else ()
-    message(SEND_ERROR "You are on an unsupported platform! (Not Win32, Mac OS X or Unix)")
-endif (WIN32)
+        message(SEND_ERROR "You are on an unsupported platform! (Not Win32, Mac OS X or Unix)")
+    endif (WIN32)
+endif ()
 
 if (CMAKE_BUILD_TOOL MATCHES nmake)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")

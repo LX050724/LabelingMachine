@@ -11,7 +11,7 @@ class SocketThread : public QThread {
 Q_OBJECT
 signals:
 
-    void ReceiveData(const QByteArray, const QHostAddress &);
+    void ReceiveData(const QByteArray, SocketThread *);
 
     void Disconnected(SocketThread *);
 
@@ -51,33 +51,14 @@ public:
 
 class TCP_Server : public QTcpServer {
 Q_OBJECT
-    class myQHostAddress : public QHostAddress {
-    public:
-        myQHostAddress() = default;
-
-        myQHostAddress(QHostAddress addr) : QHostAddress(addr) {}
-
-        bool operator>(const myQHostAddress &a) const;
-
-        bool operator<(const myQHostAddress &a) const;
-
-        bool operator>=(const myQHostAddress &a) const;
-
-        bool operator<=(const myQHostAddress &a) const;
-
-        using QHostAddress::operator=;
-        using QHostAddress::operator!=;
-        using QHostAddress::operator==;
-    };
-
-    QMap<myQHostAddress, SocketThread *> ClientList;
+    QList<SocketThread *> ClientList;
     QString MachineName;
 
 signals:
 
-    void ReceiveComplete(const QByteArray &, const QHostAddress &);
+    void ReceiveComplete(const QByteArray &, SocketThread *);
 
-    void TCPNewConnection(const QHostAddress &);
+    void TCPNewConnection(SocketThread *);
 
     void TCPDisconnected(const QHostAddress &);
 
@@ -88,21 +69,18 @@ public:
 
     bool startListing();
 
-    inline void SendTo(const QHostAddress &Address, const QByteArray &Data) {
-        ClientList[Address]->Transmit(Data);
-    }
-
     inline int getCilentConut() { return ClientList.size(); }
 
-    const QList<QHostAddress> getClientAddressList();
+    inline const QList<SocketThread *> getClientSocketList() { return ClientList; }
 
 protected:
     void incomingConnection(qintptr handle) override;
 
 private slots:
 
-    void relay(const QByteArray Data, const QHostAddress &Address);
+    void relay(const QByteArray Data, SocketThread *Socket);
 
+public slots:
     void disconnectedrelay(SocketThread *Link);
 };
 

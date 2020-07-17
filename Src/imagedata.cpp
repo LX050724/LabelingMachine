@@ -8,7 +8,7 @@ ImageData::ImageData(const QString &imagepath, const QString &imagefilename, con
 
 ImageData::ImageData(const QImage &img, const QVector<BandBox> &bandboxs) :
         BandBoxs(bandboxs),
-        Img(new QImage(img)) {
+        Img(img) {
     has_label = !BandBoxs.isEmpty();
 }
 
@@ -154,7 +154,7 @@ void ImageData::parseobjectMembers(const QDomElement &Node) {
 
 const QImage ImageData::loadImage() const {
     if (remotemod)
-        return *Img;
+        return Img;
 
     QImage tmp;
     tmp.load(ImagePath + '/' + ImageFilename);

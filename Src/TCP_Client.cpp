@@ -2,7 +2,7 @@
 #include "TCP_Client.h"
 
 void TCP_Client::run() {
-    Socket = new QTcpSocket;
+    QTcpSocket *Socket = new QTcpSocket;
     Socket->connectToHost(Address, TCP_PORT);
     if (!Socket->waitForConnected(5000)) {
         qInfo() << "ConnectFailed";
@@ -12,8 +12,8 @@ void TCP_Client::run() {
         this->quit();
         return;
     }
-    QObject::connect(Socket, &QTcpSocket::disconnected,
-                     this, &TCP_Client::Socket_disconnected);
+    QObject::connect(Socket, &QTcpSocket::disconnected, this, &TCP_Client::Socket_disconnected,
+                     Qt::QueuedConnection);
 
     Ready = true;
     while (true) {
@@ -25,7 +25,9 @@ void TCP_Client::run() {
                 TransmitData.pop_front();
             }
             if (STOP) {
-                Socket->close();
+                QObject::disconnect(Socket, &QTcpSocket::disconnected,
+                                    this, &TCP_Client::Socket_disconnected);
+                delete Socket;
                 return;
             }
         }
@@ -54,11 +56,6 @@ TCP_Client::~TCP_Client() {
         STOP = true;
         this->wait();
     }
-    if (Socket) {
-        QObject::disconnect(Socket, &QTcpSocket::disconnected,
-                            this, &TCP_Client::Socket_disconnected);
-        delete Socket;
-    }
 }
 
 void TCP_Client::Transmit(const QByteArray &_data) {
@@ -72,9 +69,7 @@ void TCP_Client::Socket_disconnected() {
     this->quit();
     STOP = true;
     this->wait();
-    QObject::disconnect(Socket, &QTcpSocket::disconnected,
-                        this, &TCP_Client::Socket_disconnected);
-    emit disconnect();
+    emit Disconnected();
 }
 
 bool TCP_Client::Connect(const QHostAddress &address) {
@@ -100,8 +95,5 @@ void TCP_Client::Disconnect() {
         STOP = true;
         this->wait();
     }
-    QObject::disconnect(Socket, &QTcpSocket::disconnected,
-                        this, &TCP_Client::Socket_disconnected);
     Ready = Failed = STOP = false;
-    delete Socket;
 }
