@@ -339,19 +339,15 @@ void MainWindow::on_ClientModeAction_triggered() {
 
 void MainWindow::on_HostModeAction_triggered() {
     if (Project.isOpened()) {
-
-        if (pServerUi == nullptr)
-            pServerUi = new ServerUI(nullptr, this);
-        pServerUi->show();
-
-        while (!pServerUi->isReady()) {
-            if (pServerUi->isFailed()) {
-                QMessageBox::warning(this, tr("error"), tr("TCP startup failure"));
-                delete pServerUi;
-                pServerUi = nullptr;
+        if (pServerUi == nullptr) {
+            try {
+                pServerUi = new ServerUI(nullptr, this);
+            } catch (const std::runtime_error &e) {
+                QMessageBox::warning(this, tr("error"), tr("TCP startup failure") + e.what());
                 return;
             }
         }
+        pServerUi->show();
         ui->ClientModeAction->setDisabled(true);
         ui->pushButton_3->setDisabled(true);
     }

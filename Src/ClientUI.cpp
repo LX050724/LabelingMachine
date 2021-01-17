@@ -8,7 +8,7 @@
 
 ClientUI::ClientUI(QWidget *parent, MainWindow *pmainwindow) :
         QWidget(parent),
-        Client(new TCP_Client(this)),
+        logger(__FUNCTION__),
         pMainWindow(pmainwindow),
         ui(new Ui::ClientUI) {
     ui->setupUi(this);
@@ -23,246 +23,72 @@ ClientUI::ClientUI(QWidget *parent, MainWindow *pmainwindow) :
 }
 
 ClientUI::~ClientUI() {
-    disconnect(&TimeoutTimer, &QTimer::timeout, this, &ClientUI::Timer_timeout);
     delete Image;
-    delete Client;
     delete ui;
 }
 
-void ClientUI::on_pushButton_clicked() {
-    if (Client->isReady()) {
-        Client->Disconnect();
-        ui->pushButton->setText(tr("Connect"));
-    } else {
-        QHostAddress SeverAddress(ui->lineEdit->text());
-        if (SeverAddress.isNull()) {
-            QMessageBox::warning(this, tr("error"), tr("IP address error"));
-            return;
-        }
-        Log_println(tr("Begin to connect") + SeverAddress.toString().toUtf8());
-        if (!Client->Connect(SeverAddress)) {
-            QMessageBox::warning(this, tr("error"), tr("The connection fails"));
-            Log_println(tr("The connection fails"));
-            return;
-        } else {
-            Log_println(tr("The connection is successful"));
-            Log_println(tr("Wait for the server to prepare the signal"));
-        }
-
-        pMainWindow->Project.setImgPath("remote");
-        pMainWindow->Project.setXmlPath("remote");
-
-        QObject::connect(Client, &TCP_Client::ReceiveData,
-                         this, &ClientUI::Client_ReceiveComplete,
-                         Qt::QueuedConnection);
-        QObject::connect(Client, &TCP_Client::Disconnected,
-                         this, &ClientUI::Client_Disconnected,
-                         Qt::QueuedConnection);
-
-        ui->pushButton->setText(tr("Disconnect"));
-    }
-}
-
-void ClientUI::Client_ReceiveComplete(const QByteArray &array) {
-    if (array.isEmpty()) {
-        qWarning() << "Bad Data";
-        loadcomplete = true;
-        Log_println(tr("Transmission error. Please try again"));
-        return;
-    }
-    const char *pData = array.data();
-    int DataSize = ToInt(pData, 0) + sizeof(int);
-    int flag = ToInt(pData, 1);
-    qDebug() << "Size:" << DataSize << "ID:" << flag;
-    if (DataSize != array.size()) {
-        qWarning() << "Size error" << DataSize + sizeof(int) << array.size();
-        if (!loadcomplete) {
-            Send_IRP(Flag_Image_IRP, filename_now);
-        }
-        return;
-    }
-    switch (flag) {
-        case Flag_Ready: {
-            Log_println(tr("Server startup"));
-            Log_println(tr("Send the get label request"));
-            ui->pushButton->setDisabled(true);
-            singleProxy();
-            Send_IRP(Flag_Label_IRP);
-            break;
-        }
-        case Flag_Label_IRP: {
-            Log_println(tr("Receive server label data"));
-            Receive_Labels(array);
-            Send_IRP(Flag_Image_List_IRP);
-            Log_println(tr("Send a request to get a list of pictures"));
-            break;
-        }
-        case Flag_Image_List_IRP: {
-            Log_println(tr("Received server image list data"));
-            Receive_Image_List(array);
-            break;
-        }
-        case Flag_Image_IRP: {
-            Log_println(tr("Received server image data"));
-            Receive_Image(array);
-            Send_IRP(Flag_Image_BandBoxs_IRP, filename_now);
-            break;
-        }
-        case Flag_Image_BandBoxs_IRP: {
-            Log_println(tr("Received server BandBox data"));
-            Recrive_Image_BandBoxs(array);
-            loadimg();
-            break;
-        }
-        case Flag_Image_haslabel: {
-            Log_println(tr("Receive server haslabel data"));
-            Receive_Image_HasLabel(array);
-            break;
-        }
-    }
-}
-
-void ClientUI::Client_Disconnected() {
+void ClientUI::Client_Disconnected(const QString &) {
     Log_println(tr("Connection is broken"));
-    ui->pushButton->setText(tr("The connection"));
+    ui->connectButton->setText(tr("The connection"));
 }
 
 void ClientUI::Send_Image_BandBox() {
-    /*int size, int flag = Flag_Image_BandBoxs_FB, int w, int h, int len, char[len] filename, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
     if (filename_now.isEmpty())
         return;
 
-    QByteArray data;
-    QVector<BandBox> bandboxs = Data.getBandBoxs();
-
-    ImageList[filename_now] = !bandboxs.isEmpty();
-
-    QSize imgsize;
-    if (Image != nullptr)
-        imgsize = Image->size();
-
-    qDebug() << imgsize;
-
-    int head[] = {
-            Flag_Image_BandBoxs_FB,
-            imgsize.width(),
-            imgsize.height(),
-            filename_now.length()};
-
-    data.push_back(QByteArray(ToCharp(head), sizeof(head)));
-    data.push_back(filename_now.toLocal8Bit());
-
-    int BandBoxsCount = bandboxs.size();
-    data.push_back(QByteArray(ToCharp(&BandBoxsCount), sizeof(int)));
-
-    for (const BandBox &i : bandboxs) {
-        int bandbox[] = {
-                i.ID,
-                i.Rect.x(),
-                i.Rect.y(),
-                i.Rect.width(),
-                i.Rect.height()};
-        data.push_back(QByteArray(ToCharp(bandbox), sizeof(bandbox)));
+    QJsonArray array;
+    for (const auto &i : Data.getBandBoxs()) {
+        array.push_back((QJsonObject) i);
     }
-    int flag = Flag_Image_BandBoxs_FB;
-    data.push_front(QByteArray(ToCharp(&flag), sizeof(int)));
-    int size = data.size();
-    data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    Client->Transmit(data);
+    ImageList[filename_now] = !array.isEmpty();
+    QSize imgsize = (Image != nullptr ? Image->size() : QSize());
 
+    rcsClient->PUSH("Server", "BandBoxs", {
+            {"filename", filename_now},
+            {"height",   imgsize.height()},
+            {"weight",   imgsize.width()},
+            {"bandbox",  array}
+    });
     Log_println(tr("BandBox data has been sent"));
 }
 
-void ClientUI::Send_IRP(ClientUI::IRP n) {
-    /*int sizeof(int), int flag */
-    int buff[] = {sizeof(int), n};
-    Client->Transmit(QByteArray(ToCharp(buff), sizeof(buff)));
+void ClientUI::Receive_Image(const QString &from, const QJsonObject &obj) {
+    auto array = obj.find("BandBoxs")->toArray();
+    QByteArray base64 = obj.find("img")->toVariant().toByteArray();
+    ImageRAWData = QByteArray::fromBase64(base64);
+    Image->loadFromData(ImageRAWData);
+    bandBoxs.clear();
+    for (const auto &i : array) {
+        bandBoxs.push_back(i.toObject());
+    }
+    loadimg();
+    logger.info("Image receive sucesses");
 }
 
-void ClientUI::Send_IRP(ClientUI::IRP n, const QString &filename) {
-    /*int size, int flag, int len,  char[len] filename*/
-    int flag[] = {n, filename.length()};
-    QByteArray data(ToCharp(flag), sizeof(flag));
-    data.push_back(filename.toLocal8Bit());
-
-    int size = data.size();
-    data.push_front(QByteArray(ToCharp(&size), sizeof(int)));
-    Client->Transmit(data);
-}
-
-void ClientUI::Receive_Labels(const QByteArray &array) {
-    /*int size, int flag = Flag_Label_IRP, int count, <int len, char[len] label> * count */
-    QByteArray DataCopy(array);
-    const char *pData = DataCopy.constData();
-    int count = ToInt(pData, 2);
-    DataCopy.remove(0, sizeof(int) * 3);
-
-    for (int i = 0; i < count; ++i) {
-        const char *p = DataCopy.constData();
-        int len = ToInt(p, 0);
-        pMainWindow->Project.labels.addLabel(QString(DataCopy.mid(sizeof(int), len)));
-        DataCopy.remove(0, len + sizeof(int));
+void ClientUI::Receive_Image_List(const QString &from, const QJsonObject &obj) {
+    auto ImgArray = obj.find("ImageList")->toArray();
+    auto LableArray = obj.find("lables")->toArray();
+    for (const auto &i : ImgArray) {
+        auto object = i.toObject();
+        auto filename = object.find("Image")->toString();
+        auto haslabel = object.find("HasLabel")->toBool();
+        ImageList.insert(filename, haslabel);
+    }
+    for(const auto &i : LableArray) {
+        pMainWindow->Project.labels.addLabel(i.toString());
     }
     pMainWindow->updateclass();
     pMainWindow->ui->graphicsView->setLabel(0, pMainWindow->Project.labels[0],
                                             pMainWindow->Project.labels.LabelCount());
-}
-
-void ClientUI::Receive_Image(const QByteArray &array) {
-    /*int size, int flag = Flag_Image_IRP, int ImageSize, char[ImageSize] imgRAW*/
-    const char *pData = array.constData();
-    int ImageSize = ToInt(pData, 2);
-    ImageRAWData = array;
-    ImageRAWData.remove(0, sizeof(int) * 3);
-    Image->loadFromData(ImageRAWData);
-    qDebug() << ImageRAWData.size() << ImageSize;
-    if (ImageRAWData.size() != ImageSize)qWarning("Image data size error");
-}
-
-void ClientUI::Receive_Image_List(const QByteArray &array) {
-    /*int size, int imgCount, <int len, char[len] filename> * imgCount */
-    QByteArray DataCopy(array);
-    const char *pData = DataCopy.constData();
-    int imgCount = ToInt(pData, 2);
-    DataCopy.remove(0, sizeof(int) * 3);
-
-    //QStringList imglist;
-    ImageList.clear();
-    for (int i = 0; i < imgCount; ++i) {
-        const char *p = DataCopy.constData();
-        int len = ToInt(p, 0);
-        ImageList.insert(DataCopy.mid(sizeof(int), len), false);
-        DataCopy.remove(0, len + sizeof(int));
-    }
     pMainWindow->ui->imgs_listWidget->clear();
     pMainWindow->ui->imgs_listWidget->addItems(ImageList.keys());
 }
 
-void ClientUI::Recrive_Image_BandBoxs(const QByteArray &array) {
-    /*int size, int BandBoxsCount, <int ID, int x, int y, int w, int h> * BandBoxsCount */
-    QByteArray DataCopy(array);
-    const char *pData = DataCopy.constData();
-    int BandBoxsCount = ToInt(pData, 2);
-    DataCopy.remove(0, sizeof(int) * 3);
-
+void ClientUI::Recrive_Image_BandBoxs(const QString &from, const QJsonObject &obj) {
+    auto array = obj.find("BandBoxs")->toArray();
     bandBoxs.clear();
-    for (int i = 0; i < BandBoxsCount; ++i) {
-        const int *p = (const int *) DataCopy.constData();
-        QString Label = pMainWindow->Project.labels[p[0]];
-        bandBoxs.push_back(BandBox(QRect(p[1], p[2], p[3], p[4]),
-                                   Label, p[0]));
-        DataCopy.remove(0, sizeof(int) * 5);
-    }
-}
-
-void ClientUI::Receive_Image_HasLabel(const QByteArray &array) {
-    /*int size, int flag = Flag_Image_haslabel, int len, char[len] haslabel*/
-    const char *pData = array.constData();
-    const char *phaslabel = pData + sizeof(int) * 3;
-    int len = ToInt(pData, 2);
-    QVector<QString> filename = ImageList.keys().toVector();
-    for (int i = 0; i < len; ++i) {
-        ImageList[filename[i]] = phaslabel[i];
+    for (const auto &i : array) {
+        bandBoxs.push_back(i.toObject());
     }
 }
 
@@ -277,7 +103,8 @@ void ClientUI::Proxy_nextimg() {
             if (Item != nullptr) {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
-                Send_IRP(Flag_Image_IRP, filename_now);
+                logger.info("send Get image {}", filename_now);
+                rcsClient->GET("Server", "Image", {{"filename", filename_now}});
             } else {
                 loadcomplete = true;
                 qInfo() << "next Item is null";
@@ -298,7 +125,8 @@ void ClientUI::Proxy_lastimg() {
             if (Item != nullptr) {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
-                Send_IRP(Flag_Image_IRP, filename_now);
+                logger.info("send Get image {}", filename_now);
+                rcsClient->GET("Server", "Image", {{"filename", filename_now}});
             } else {
                 loadcomplete = true;
                 qInfo() << "next Item is null";
@@ -338,14 +166,12 @@ void ClientUI::Proxy_Keypress(int Key) {
 }
 
 void ClientUI::Proxy_imgs_listWidget_itemClicked(QListWidgetItem *item) {
-    if (loadcomplete) {
-        if (!item->text().isEmpty()) {
-            Send_Image_BandBox();
-            filename_now = item->text();
-            Send_IRP(Flag_Image_IRP, filename_now);
-        }
-    } else
-        qInfo("Busy");
+    if (!item->text().isEmpty()) {
+        Send_Image_BandBox();
+        filename_now = item->text();
+        logger.info("send Get image {}", filename_now);
+        rcsClient->GET("Server", "Image", {{"filename", filename_now}});
+    }
 }
 
 void ClientUI::Proxy_comboBox_currentIndexChanged(int index) {
@@ -415,23 +241,18 @@ void ClientUI::singleProxy() {
             this, &ClientUI::Proxy_save_triggered);
 }
 
-inline void ClientUI::Log_printf(const char *format, ...) {
-    char buff[200];
+void ClientUI::Log_printf(const char *format, ...) {
+    char buff[512];
     va_list valist;
             va_start(valist, format);
-    vsnprintf(buff, 200, format, valist);
+    vsnprintf(buff, 512, format, valist);
             va_end(valist);
     ui->textBrowser->append(buff);
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
-inline void ClientUI::Log_println(const QString &_Log) {
+void ClientUI::Log_println(const QString &_Log) {
     ui->textBrowser->append(_Log + '\n');
-    ui->textBrowser->moveCursor(QTextCursor::End);
-}
-
-inline void ClientUI::Log_putc(char c) {
-    ui->textBrowser->append(QString(c));
     ui->textBrowser->moveCursor(QTextCursor::End);
 }
 
@@ -442,4 +263,72 @@ void ClientUI::loadimg() {
     pMainWindow->updatelabel(Data);
     loadcomplete = true;
     TimeoutTimer.stop();
+}
+
+void ClientUI::on_connectButton_clicked() {
+    auto text = tr("Disconnect");
+    if(ui->connectButton->text() == text) {
+        delete rcsClient;
+        ui->connectButton->setText(tr("Connect"));
+        return;
+    }
+
+    if(ui->nameEdit->text().isEmpty()) {
+        QMessageBox::warning(this, tr("error"), tr("name is empty"));
+        return;
+    }
+
+    QString IP = ui->addrEdit->text();
+    QString name = ui->nameEdit->text();
+
+    try {
+        QHostAddress addr(IP);
+        if (addr.isNull()) {
+            QMessageBox::warning(this, tr("error"), tr("IP address error"));
+            return;
+        }
+        rcsClient = new RCS_Client(name, addr, 8848, this);
+    } catch (const std::runtime_error &e) {
+        delete rcsClient;
+        rcsClient = nullptr;
+        logger.error("error: {}", e.what());
+        return;
+    }
+    Log_println(tr("The connection is successful"));
+    Log_println(tr("Wait for the server to prepare the signal"));
+
+    pMainWindow->Project.setImgPath("remote");
+    pMainWindow->Project.setXmlPath("remote");
+    rcsClient->RegisterPushCallBack("ImageList", this, &ClientUI::Receive_Image_List);
+    rcsClient->RegisterPushCallBack("BandBoxs", this, &ClientUI::Recrive_Image_BandBoxs);
+    rcsClient->RegisterPushCallBack("Image", this, &ClientUI::Receive_Image);
+    connect(rcsClient, SIGNAL(BROADCAST(const QString &, const QString &, const QJsonObject &)),
+            this, SLOT(BROADCAST(const QString &, const QString &, const QJsonObject &)));
+    connect(rcsClient, SIGNAL(disconnected(const QString &)),
+            this, SLOT(Client_Disconnected(const QString &)));
+    connect(rcsClient, SIGNAL(RETURN(TcpConnect::PACK_TYPE, const QJsonObject &)),
+            this, SLOT(RETURN(TcpConnect::PACK_TYPE, const QJsonObject &)));
+
+    ui->connectButton->setText(text);
+}
+
+void ClientUI::BROADCAST(const QString &from, const QString &broadcastName, const QJsonObject &data) {
+    if(!ready) {
+        rcsClient->GET(from, "ImageList");
+        singleProxy();
+    }
+    ready = true;
+}
+
+void ClientUI::RETURN(TcpConnect::PACK_TYPE type, const QJsonObject &info) {
+    switch (type) {
+        case TcpConnect::SERVER_RET:
+            Log_printf("service return %s", QJsonDocument(info).toJson().data());
+            break;
+        case TcpConnect::CLIENT_RET:
+            Log_printf("Client return %s", QJsonDocument(info).toJson().data());
+            break;
+        default:
+            break;
+    }
 }

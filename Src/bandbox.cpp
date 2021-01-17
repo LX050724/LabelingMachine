@@ -9,7 +9,6 @@ BandBox::BandBox(int xmin, int ymin, int xmax, int yamx, const QString &label, i
 
 BandBox::BandBox(QGraphicsRectItem *item, int id, QString label) : Label(std::move(label)) {
     QRect tmp(item->rect().toRect());
-    Rect = QRect(item->pos().toPoint(), item->pos().toPoint() + QPoint(tmp.width(), tmp.height())),
-            Item = item;
+    Rect = QRect(item->pos().toPoint(), item->pos().toPoint() + QPoint(tmp.width(), tmp.height()));
     ID = id;
 }

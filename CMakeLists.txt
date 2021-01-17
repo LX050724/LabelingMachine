@@ -11,27 +11,18 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(ICON "")
 
-if (MSVC)
-    set(app_WINRC app_win32.rc)
-    set_property(SOURCE app_win32.rc APPEND PROPERTY
-            OBJECT_DEPENDS ${PROJECT_SOURCE_DIR}/bitbug_favicon.ico)
-    set(ICON ${app_WINRC} Inc/publicdefine.h)
-endif ()
 
 #添加源文件
 file(GLOB_RECURSE SOURCES
         "Inc/*.h"
         "Src/*.*"
-        "Resource.qrc"
-        "LabelingMachine_zh_CN.ts")
+        "Resource.qrc")
 
-add_executable(LabelingMachine ${SOURCES} ${ICON})
+add_executable(LabelingMachine ${SOURCES})
 
 #添加include路径
-target_include_directories(LabelingMachine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc
-        ${CMAKE_CURRENT_BINARY_DIR}/LabelingMachine_autogen/include)
+target_include_directories(LabelingMachine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ./Inc)
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
     # Remove the console of gui program
@@ -55,31 +46,29 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
     else ()
         message(SEND_ERROR "You are on an unsupported platform! (Not Win32, Mac OS X or Unix)")
     endif (WIN32)
+else ()
+    target_compile_definitions(LabelingMachine PUBLIC __DEBUG__)
 endif ()
 
 if (CMAKE_BUILD_TOOL MATCHES nmake)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
-
-    #    set(FFMPEG_DIR D:/Library/ffmpeg-4.3-win64-dev)
-    #
-    #    target_link_directories(LabelingMachine PUBLIC "${FFMPEG_DIR}/lib")
-    #    target_include_directories(LabelingMachine PUBLIC "${FFMPEG_DIR}/include")
-    #    file(GLOB FFMPEG_LIBS "${FFMPEG_DIR}/lib/*.lib")
-    #    target_link_libraries(LabelingMachine PUBLIC ${FFMPEG_LIBS})
 elseif (CMAKE_BUILD_TOOL MATCHES gnu)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O1")
-    target_link_libraries(LabelingMachine pthread)
 endif ()
 
 #设置Qt库
-find_package(Qt5Widgets)
-find_package(Qt5Gui)
-find_package(Qt5Xml)
-find_package(Qt5Network)
-qt5_use_modules(LabelingMachine LINK_PUBLIC Core Widgets Gui Xml Network)
+find_package(Qt5 COMPONENTS Widgets LinguistTools Network Xml REQUIRED)
+target_link_libraries(LabelingMachine PUBLIC Qt5::Widgets Qt5::Network Qt5::Xml)
 
 #OpenCV
 find_package(OpenCV 4.1.1 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(LabelingMachine PUBLIC ${OpenCV_LIBS})
+
+#https://github.com/gabime/spdlog.git
+#http://www.kdrobot.top/git/LX050724/KdrobotCppLibs.git
+find_package(spdlog)
+find_package(loggerFactory)
+find_package(RobotCommSystem)
+target_link_libraries(LabelingMachine PUBLIC spdlog::spdlog KdrobotCppLibs::loggerFactory KdrobotCppLibs::RobotCommSystem)

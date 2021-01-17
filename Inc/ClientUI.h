@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QtWidgets/QListWidgetItem>
 #include <QTimer>
-#include "TCP_Client.h"
+#include <RCS_Client.h>
 #include "bandbox.h"
 #include "imagedata.h"
 
@@ -20,17 +20,8 @@ Q_OBJECT
         all, Marked, NoMarked
     };
 
-    typedef enum IRP {
-        Flag_Ready = 1,
-        Flag_Label_IRP,
-        Flag_Image_IRP,
-        Flag_Image_BandBoxs_IRP,
-        Flag_Image_List_IRP,
-        Flag_Image_BandBoxs_FB,
-        Flag_Image_haslabel
-    } IRP;
-
-    TCP_Client *Client = nullptr;
+    spdlogger logger;
+    RCS_Client *rcsClient = nullptr;
     MainWindow *pMainWindow = nullptr;
 
     QString filename_now;
@@ -39,6 +30,7 @@ Q_OBJECT
     QImage *Image = nullptr;
     ImageData Data;
     volatile bool loadcomplete = true;
+    volatile bool ready = false;
 
     QMap<QString, bool> ImageList;
 
@@ -50,44 +42,30 @@ public:
     ~ClientUI() override;
 
 private:
-#define ToInt(p, Index) (((const int *)p)[Index])
-#define ToCharp(p) ((const char *)p)
-
     Ui::ClientUI *ui;
 
     void singleProxy();
 
     void loadimg();
 
-    void Send_IRP(IRP n);
-
-    void Send_IRP(IRP n, const QString &filename);
-
     void Send_Image_BandBox();
 
-    void Receive_Labels(const QByteArray &array);
+    void Receive_Image(const QString &from, const QJsonObject &obj);
 
-    void Receive_Image(const QByteArray &array);
+    void Receive_Image_List(const QString &from, const QJsonObject &obj);
 
-    void Receive_Image_List(const QByteArray &array);
-
-    void Recrive_Image_BandBoxs(const QByteArray &array);
-
-    void Receive_Image_HasLabel(const QByteArray &array);
+    void Recrive_Image_BandBoxs(const QString &from, const QJsonObject &obj);
 
     void Log_println(const QString &_Log);
-
-    void Log_putc(char c);
 
     void Log_printf(const char *format, ...);
 
 private slots:
+    void BROADCAST(const QString &from, const QString &broadcastName, const QJsonObject &data);
 
-    void on_pushButton_clicked();
+    void RETURN(TcpConnect::PACK_TYPE type, const QJsonObject &info);
 
-    void Client_ReceiveComplete(const QByteArray &array);
-
-    void Client_Disconnected();
+    void Client_Disconnected(const QString &);
 
     void Proxy_nextimg();
 
@@ -102,6 +80,8 @@ private slots:
     void Proxy_save_triggered();
 
     void Timer_timeout();
+
+    void on_connectButton_clicked();
 };
 
 #endif // CONNECTTOSEVER_H

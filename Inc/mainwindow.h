@@ -10,7 +10,6 @@
 #include "bandboxview.h"
 #include "labelingmaching.h"
 #include "classeditor.h"
-#include "TCP_Server.h"
 #include "ClientUI.h"
 
 QT_BEGIN_NAMESPACE
