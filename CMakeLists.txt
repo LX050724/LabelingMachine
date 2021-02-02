@@ -70,5 +70,6 @@ target_link_libraries(LabelingMachine PUBLIC ${OpenCV_LIBS})
 #http://www.kdrobot.top/git/LX050724/KdrobotCppLibs.git
 find_package(spdlog)
 find_package(loggerFactory)
+find_package(Qt_Util)
 find_package(RobotCommSystem)
 target_link_libraries(LabelingMachine PUBLIC spdlog::spdlog KdrobotCppLibs::loggerFactory KdrobotCppLibs::RobotCommSystem)

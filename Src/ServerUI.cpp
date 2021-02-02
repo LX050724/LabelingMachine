@@ -11,11 +11,10 @@ ServerUI::ServerUI(QWidget *parent, MainWindow *pmainwindow) :
     this->pMainWindow = pmainwindow;
     /*! throw runtime error when Tcp is failed */
     rcsServer = new RCS_Server(8848, false);
-    rcsClient = new RCS_Client("Server", QHostAddress(QHostAddress::LocalHost), 8848, this);
-    rcsClient->RegisterGetCallBack("ImageList", this, &ServerUI::Send_Image_List);
-    rcsClient->RegisterGetCallBack("Labels", this, &ServerUI::Send_Labels);
-    rcsClient->RegisterGetCallBack("Image", this, &ServerUI::Send_Image);
-    rcsClient->RegisterPushCallBack("BandBoxs", this, &ServerUI::Receive_Image_BandBox);
+    rcsServer->RegisterGetCallBack("ImageList", this, &ServerUI::Send_Image_List);
+    rcsServer->RegisterGetCallBack("Labels", this, &ServerUI::Send_Labels);
+    rcsServer->RegisterGetCallBack("Image", this, &ServerUI::Send_Image);
+    rcsServer->RegisterPushCallBack("BandBoxs", this, &ServerUI::Receive_Image_BandBox);
     connect(rcsServer, &RCS_Server::NewClient,
             this, &ServerUI::Sever_TCPNewConnection);
 }
@@ -47,7 +46,7 @@ void ServerUI::on_pushButton_clicked() {
         it++;
     }
 
-    rcsClient->BROADCAST("Ready", {});
+    rcsServer->BROADCAST("Ready", {});
     ready = true;
 
     disconnect(pMainWindow->ui->comboBox, SIGNAL(currentIndexChanged(int)),
@@ -61,7 +60,7 @@ void ServerUI::Sever_TCPNewConnection(const QHostAddress &addr, const QString &n
     logger.info("New Client: addr={}, name={}", addr, name);
     if (ready) {
         if(TaskMap.contains(name)) {
-            rcsClient->BROADCAST("Ready", {});
+            rcsServer->BROADCAST(name, "Ready", {});
         } else {
             rcsServer->disconnect(name);
         }
@@ -76,7 +75,7 @@ void ServerUI::Sever_TCPNewConnection(const QHostAddress &addr, const QString &n
 void ServerUI::Proxy_comboBox_currentIndexChanged(int type) {
     if (TaskMap.isEmpty())
         return;
-    auto ServerTask = TaskMap["Server"];
+    auto ServerTask = TaskMap[RCS_Server::__NAME__];
     QStringList Itmes;
     switch (type) {
         case all: {
@@ -128,6 +127,7 @@ inline void ServerUI::Log_putc(char c) {
 void ServerUI::allocation(const QVector<ImageData> &Img) {
     size_t clientCount = rcsServer->getClientCount();
     auto clientNameList = rcsServer->getClientNameList().toVector();
+    clientNameList += RCS_Server::__NAME__;
     int div = Img.size() / clientCount;
     logger.debug("clientCount {}, div {}", clientCount, div);
     QVector<QString> Task;

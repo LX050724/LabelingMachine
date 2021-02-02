@@ -20,7 +20,6 @@ class ServerUI : public QWidget {
 Q_OBJECT
     MainWindow *pMainWindow = nullptr;
     RCS_Server *rcsServer = nullptr;
-    RCS_Client *rcsClient = nullptr;
     spdlogger logger;
     QMap<QString, QVector<QString>> TaskMap;
     volatile bool ready = false;
@@ -31,9 +30,6 @@ public:
     ~ServerUI();
 
 private:
-#define ToInt(p, Index) (((const int *)p)[Index])
-#define ToCharp(p) ((const char *)p)
-
     enum {
         all, Marked, NoMarked
     };

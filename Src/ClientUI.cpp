@@ -1,8 +1,8 @@
 ﻿#include "Inc/ClientUI.h"
 #include "ui_ClientUI.h"
 
-#include <QHostInfo>
 #include <QtWidgets/QMessageBox>
+#include <RCS_Server.h>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -43,7 +43,7 @@ void ClientUI::Send_Image_BandBox() {
     ImageList[filename_now] = !array.isEmpty();
     QSize imgsize = (Image != nullptr ? Image->size() : QSize());
 
-    rcsClient->PUSH("Server", "BandBoxs", {
+    rcsClient->PUSH(RCS_Server::__NAME__, "BandBoxs", {
             {"filename", filename_now},
             {"height",   imgsize.height()},
             {"weight",   imgsize.width()},
@@ -74,7 +74,7 @@ void ClientUI::Receive_Image_List(const QString &from, const QJsonObject &obj) {
         auto haslabel = object.find("HasLabel")->toBool();
         ImageList.insert(filename, haslabel);
     }
-    for(const auto &i : LableArray) {
+    for (const auto &i : LableArray) {
         pMainWindow->Project.labels.addLabel(i.toString());
     }
     pMainWindow->updateclass();
@@ -104,7 +104,7 @@ void ClientUI::Proxy_nextimg() {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 logger.info("send Get image {}", filename_now);
-                rcsClient->GET("Server", "Image", {{"filename", filename_now}});
+                rcsClient->GET(RCS_Server::__NAME__, "Image", {{"filename", filename_now}});
             } else {
                 loadcomplete = true;
                 qInfo() << "next Item is null";
@@ -126,7 +126,7 @@ void ClientUI::Proxy_lastimg() {
                 pMainWindow->ui->imgs_listWidget->setCurrentRow(row);
                 filename_now = Item->text();
                 logger.info("send Get image {}", filename_now);
-                rcsClient->GET("Server", "Image", {{"filename", filename_now}});
+                rcsClient->GET(RCS_Server::__NAME__, "Image", {{"filename", filename_now}});
             } else {
                 loadcomplete = true;
                 qInfo() << "next Item is null";
@@ -170,7 +170,7 @@ void ClientUI::Proxy_imgs_listWidget_itemClicked(QListWidgetItem *item) {
         Send_Image_BandBox();
         filename_now = item->text();
         logger.info("send Get image {}", filename_now);
-        rcsClient->GET("Server", "Image", {{"filename", filename_now}});
+        rcsClient->GET(RCS_Server::__NAME__, "Image", {{"filename", filename_now}});
     }
 }
 
@@ -267,13 +267,13 @@ void ClientUI::loadimg() {
 
 void ClientUI::on_connectButton_clicked() {
     auto text = tr("Disconnect");
-    if(ui->connectButton->text() == text) {
+    if (ui->connectButton->text() == text) {
         delete rcsClient;
         ui->connectButton->setText(tr("Connect"));
         return;
     }
 
-    if(ui->nameEdit->text().isEmpty()) {
+    if (ui->nameEdit->text().isEmpty()) {
         QMessageBox::warning(this, tr("error"), tr("name is empty"));
         return;
     }
@@ -313,7 +313,7 @@ void ClientUI::on_connectButton_clicked() {
 }
 
 void ClientUI::BROADCAST(const QString &from, const QString &broadcastName, const QJsonObject &data) {
-    if(!ready) {
+    if (!ready) {
         rcsClient->GET(from, "ImageList");
         singleProxy();
     }
